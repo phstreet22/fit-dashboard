@@ -1,0 +1,2759 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080c">
+<title>APEX · Performance Training</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Training">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6cff'/%3E%3Cstop offset='1' stop-color='%233ec9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M18 5 9 18h6l-1 9 9-13h-6z' fill='white'/%3E%3C/svg%3E">
+
+<!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  APEX – Trainings-Dashboard (Single-File-App, keine Abhängigkeiten)  ║
+  ╠══════════════════════════════════════════════════════════════════════╣
+  ║  Aufbau der Datei                                                    ║
+  ║   1. CSS        Design-Tokens, Layout, Komponenten, Animationen       ║
+  ║   2. HTML       App-Shell (Sidebar, Topbar, View, Modal, Fokus)       ║
+  ║   3. JS                                                              ║
+  ║      3.1  Konfiguration (PLAN_CONFIG)                                ║
+  ║      3.2  >>> TRAININGSPLAN HIER EINFÜGEN <<<                        ║
+  ║      3.3  Plan-Generator (erzeugt den 26-Wochen-Plan)                ║
+  ║      3.4  Utilities (DOM, Datum, Format, Icons)                      ║
+  ║      3.5  Plan-Normalisierung (IDs, Datum je Tag)                    ║
+  ║      3.6  Store (localStorage)                                       ║
+  ║      3.7  Selektoren & Statistiken                                   ║
+  ║      3.8  UI-Komponenten (Ring, Charts, Badges …)                    ║
+  ║      3.9  Views (Übersicht, Heute, Plan, Fortschritt, Timer)         ║
+  ║      3.10 Workout-Modal  3.11 Fokus-Modus  3.12 Timer                ║
+  ║      3.13 Aktionen & Events  3.14 Router & Init                      ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
+
+<style>
+/* =====================================================================
+   1. DESIGN TOKENS
+   ===================================================================== */
+:root {
+  --bg: #07080c;
+  --bg-2: #0b0d13;
+  --surface: #10121a;
+  --surface-2: #161924;
+  --surface-3: #1d2130;
+  --card: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  --border: rgba(255,255,255,.07);
+  --border-strong: rgba(255,255,255,.14);
+
+  --text: #eef0f6;
+  --text-2: #b0b6c6;
+  --muted: #727a8e;
+
+  --primary: #7c6cff;
+  --primary-2: #3ec9ff;
+  --accent: #c8ff4d;
+  --success: #2fe39a;
+  --warning: #ffb547;
+  --danger: #ff5c7a;
+  --recovery: #36d6c3;
+
+  --grad-primary: linear-gradient(135deg, #7c6cff 0%, #3ec9ff 100%);
+  --grad-success: linear-gradient(135deg, #2fe39a 0%, #c8ff4d 100%);
+  --grad-warm: linear-gradient(135deg, #ff9a4c 0%, #ff4d8d 100%);
+  --grad-recovery: linear-gradient(135deg, #36d6c3 0%, #3ec9ff 100%);
+
+  --radius-lg: 28px;
+  --radius: 20px;
+  --radius-sm: 13px;
+  --radius-xs: 9px;
+
+  --shadow: 0 20px 50px -20px rgba(0,0,0,.7);
+  --glow: 0 10px 30px -8px rgba(124,108,255,.55);
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --spring: cubic-bezier(.34,1.56,.64,1);
+
+  --sidebar-w: 252px;
+  --font: "Inter", "SF Pro Display", -apple-system, "Segoe UI Variable Display", "Segoe UI", Roboto, system-ui, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* Dezente Hintergrund-Glows */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(900px 600px at 12% -10%, rgba(124,108,255,.16), transparent 60%),
+    radial-gradient(800px 500px at 100% 0%, rgba(62,201,255,.10), transparent 60%),
+    radial-gradient(700px 600px at 60% 120%, rgba(47,227,154,.06), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+body.locked { overflow: hidden; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+input, textarea, select { font: inherit; color: inherit; }
+h1, h2, h3, h4, p { margin: 0; }
+.i { width: 20px; height: 20px; flex-shrink: 0; }
+.i-sm { width: 16px; height: 16px; }
+.i-lg { width: 26px; height: 26px; }
+.muted { color: var(--muted); }
+.text-2 { color: var(--text-2); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+::selection { background: rgba(124,108,255,.4); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-track { background: transparent; }
+:focus-visible { outline: 2px solid var(--primary-2); outline-offset: 2px; border-radius: 8px; }
+
+/* =====================================================================
+   APP SHELL
+   ===================================================================== */
+.app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+
+.sidebar {
+  position: fixed; inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  padding: 26px 18px;
+  display: flex; flex-direction: column; gap: 26px;
+  background: linear-gradient(180deg, rgba(16,18,26,.85), rgba(10,11,16,.85));
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 20;
+}
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 8px; }
+.brand-logo {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--grad-primary);
+  box-shadow: var(--glow);
+  color: #fff;
+}
+.brand-name { font-weight: 800; letter-spacing: .14em; font-size: 17px; }
+.brand-sub { font-size: 12px; color: var(--muted); margin-top: -2px; }
+
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); padding: 0 12px 6px; }
+.nav-item {
+  position: relative;
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+  transition: background .25s, color .25s, transform .2s;
+}
+.nav-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.nav-item:active { transform: scale(.98); }
+.nav-item.active { background: linear-gradient(90deg, rgba(124,108,255,.18), rgba(124,108,255,.04)); color: #fff; }
+.nav-item.active::before {
+  content: ""; position: absolute; left: -18px; top: 10px; bottom: 10px; width: 3px;
+  border-radius: 0 4px 4px 0; background: var(--grad-primary);
+}
+.nav-item.active .i { color: var(--primary-2); }
+.nav-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: rgba(62,201,255,.14); color: var(--primary-2); }
+
+.side-card {
+  margin-top: auto;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+.side-card .row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+.side-card strong { font-size: 20px; }
+.side-actions { display: flex; flex-direction: column; gap: 2px; }
+.link-btn { font-size: 12.5px; color: var(--muted); padding: 6px 12px; border-radius: 8px; text-align: left; display: flex; gap: 8px; align-items: center; transition: color .2s, background .2s; }
+.link-btn:hover { color: var(--text); background: rgba(255,255,255,.04); }
+
+.main { flex: 1; margin-left: var(--sidebar-w); min-width: 0; padding: 26px 34px 60px; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 26px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.topbar h1 { font-size: clamp(22px, 2.6vw, 30px); font-weight: 750; letter-spacing: -.02em; margin-top: 2px; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--grad-primary) border-box;
+  border: 2px solid transparent;
+}
+.timer-pill {
+  display: none; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 99px;
+  background: rgba(124,108,255,.14); border: 1px solid rgba(124,108,255,.35);
+  font-family: var(--mono); font-weight: 700; font-size: 14px;
+  transition: transform .2s, background .2s;
+}
+.timer-pill.show { display: inline-flex; animation: popIn .35s var(--spring); }
+.timer-pill:hover { transform: translateY(-1px); background: rgba(124,108,255,.22); }
+.timer-pill .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-2); box-shadow: 0 0 0 0 rgba(62,201,255,.6); animation: pulse 1.6s infinite; }
+.timer-pill.paused .pulse { animation: none; background: var(--warning); }
+
+.view { animation: viewIn .45s var(--ease) both; }
+.view.no-anim { animation: none; }
+
+.bottom-nav { display: none; }
+
+/* Einstellungen */
+.wgroup + .wgroup { margin-top: 22px; }
+.wgroup-title { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+.wlist { display: flex; flex-direction: column; gap: 8px; }
+.wrow {
+  display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 16px; align-items: center;
+  padding: 12px 14px; border-radius: 14px;
+  background: rgba(255,255,255,.03); border: 1px solid transparent;
+  transition: background .25s, border-color .25s;
+}
+.wrow:hover { background: rgba(255,255,255,.05); }
+.wrow.custom { border-color: rgba(124,108,255,.35); background: rgba(124,108,255,.06); }
+.wrow-main { min-width: 0; }
+.wrow-main strong { display: block; font-weight: 650; }
+.wrow-main span { font-size: 12.5px; color: var(--muted); }
+.wrow-reset { font-size: 12px; color: var(--primary-2); font-weight: 600; margin-left: 8px; }
+.wrow-reset:hover { text-decoration: underline; }
+.seg { display: inline-flex; padding: 3px; border-radius: 11px; background: rgba(0,0,0,.3); border: 1px solid var(--border); }
+.seg button { padding: 7px 12px; border-radius: 8px; font-size: 12.5px; font-weight: 650; color: var(--text-2); transition: background .2s, color .2s; white-space: nowrap; }
+.seg button:hover { color: var(--text); }
+.seg button.active { background: var(--grad-primary); color: #fff; }
+.wbox { display: flex; align-items: center; gap: 6px; transition: opacity .2s; }
+.wbox input { width: 78px; text-align: center; font-weight: 750; font-size: 16px; padding: 8px 6px; }
+.wbox .icon-btn { width: 36px; height: 36px; font-size: 17px; }
+.wbox .unit { font-size: 13px; color: var(--muted); font-weight: 600; width: 18px; }
+.wbox.disabled { opacity: .3; pointer-events: none; }
+
+/* =====================================================================
+   GRID & CARDS
+   ===================================================================== */
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; }
+.span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; }
+.span-6 { grid-column: span 6; } .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; }
+.span-12 { grid-column: span 12; }
+
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  overflow: hidden;
+  transition: border-color .3s, transform .3s var(--ease), box-shadow .3s;
+  animation: rise .55s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+.card:hover { border-color: var(--border-strong); }
+.card.lift:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.no-anim .card, .no-anim .day-card { animation: none; }
+
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.card-title { font-size: 15px; font-weight: 650; display: flex; align-items: center; gap: 10px; }
+.card-title .i { color: var(--primary-2); }
+.card-sub { font-size: 13px; color: var(--muted); }
+
+/* Hero */
+.hero {
+  padding: 30px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(124,108,255,.32), transparent 52%),
+    radial-gradient(90% 120% at 100% 100%, rgba(62,201,255,.18), transparent 55%),
+    linear-gradient(180deg, #141726, #0f111a);
+  border-color: rgba(124,108,255,.25);
+  display: flex; gap: 28px; align-items: center; justify-content: space-between;
+  min-height: 260px;
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(70% 90% at 80% 50%, #000, transparent);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hero h2 { font-size: clamp(26px, 3.2vw, 40px); font-weight: 800; letter-spacing: -.03em; line-height: 1.08; }
+.hero p.lead { color: var(--text-2); max-width: 520px; }
+.hero-side { position: relative; z-index: 1; flex-shrink: 0; }
+.hero.recovery { background:
+    radial-gradient(120% 140% at 0% 0%, rgba(54,214,195,.25), transparent 52%),
+    radial-gradient(90% 120% at 100% 100%, rgba(62,201,255,.14), transparent 55%),
+    linear-gradient(180deg, #111a1d, #0e1216); border-color: rgba(54,214,195,.22); }
+.hero.done { border-color: rgba(47,227,154,.3); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 12px; border-radius: 99px;
+  background: rgba(255,255,255,.06); border: 1px solid var(--border);
+  font-size: 13px; color: var(--text-2); font-weight: 500;
+}
+.chip .i { width: 15px; height: 15px; color: var(--primary-2); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 12px 20px; border-radius: 14px;
+  font-weight: 650; font-size: 14.5px;
+  transition: transform .18s var(--ease), box-shadow .25s, background .25s, border-color .25s, opacity .2s;
+  white-space: nowrap; user-select: none;
+}
+.btn:active { transform: scale(.96); }
+.btn-primary { background: var(--grad-primary); color: #fff; box-shadow: var(--glow); }
+.btn-primary:hover { box-shadow: 0 14px 36px -8px rgba(124,108,255,.75); transform: translateY(-1px); }
+.btn-success { background: var(--grad-success); color: #06210f; box-shadow: 0 10px 30px -8px rgba(47,227,154,.5); }
+.btn-success:hover { transform: translateY(-1px); }
+.btn-ghost { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: rgba(255,255,255,.09); border-color: var(--border-strong); }
+.btn-danger { background: rgba(255,92,122,.12); color: var(--danger); border: 1px solid rgba(255,92,122,.3); }
+.btn-lg { padding: 16px 26px; font-size: 16px; border-radius: 16px; }
+.btn-block { width: 100%; }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: inline-grid; place-items: center;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  color: var(--text-2);
+  font-weight: 700; font-size: 13px;
+  transition: background .2s, color .2s, transform .15s;
+}
+.icon-btn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.icon-btn:active { transform: scale(.92); }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .02em;
+  padding: 4px 10px; border-radius: 99px;
+  white-space: nowrap;
+  background: rgba(255,255,255,.07); color: var(--text-2);
+}
+.badge .i { width: 13px; height: 13px; }
+.s-done { background: rgba(47,227,154,.14); color: var(--success); }
+.s-today { background: rgba(124,108,255,.18); color: #b3a9ff; }
+.s-missed { background: rgba(255,92,122,.13); color: var(--danger); }
+.s-skipped { background: rgba(255,255,255,.06); color: var(--muted); }
+.s-upcoming { background: rgba(62,201,255,.1); color: var(--primary-2); }
+.s-rest { background: rgba(255,255,255,.05); color: var(--muted); }
+.s-progress { background: rgba(255,181,71,.13); color: var(--warning); }
+.s-open { background: rgba(255,255,255,.06); color: var(--text-2); }
+
+/* Progress bar */
+.bar { position: relative; height: 8px; border-radius: 99px; background: rgba(255,255,255,.07); overflow: hidden; }
+.bar > span {
+  position: absolute; inset: 0 auto 0 0; width: var(--w, 0%);
+  border-radius: inherit; background: var(--grad-primary);
+  animation: fill 1.1s var(--ease) both;
+  transition: width .6s var(--ease);
+}
+.bar.success > span { background: var(--grad-success); }
+.bar.thin { height: 5px; }
+.bar.thick { height: 12px; }
+.no-anim .bar > span { animation: none; }
+
+/* Progress ring */
+.ring { position: relative; display: grid; place-items: center; }
+.ring svg { width: 100%; height: 100%; display: block; }
+.ring-bg { fill: none; stroke: rgba(255,255,255,.07); }
+.ring-fg { fill: none; stroke-linecap: round; transition: stroke-dashoffset 1.4s var(--ease); }
+.ring-label { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.ring-label strong { font-size: 1.9em; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.ring-label span { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* Stat cards */
+.stat { display: flex; flex-direction: column; gap: 6px; }
+.stat-icon {
+  width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; margin-bottom: 8px;
+  background: rgba(124,108,255,.14); color: #a99eff;
+}
+.stat-icon.green { background: rgba(47,227,154,.13); color: var(--success); }
+.stat-icon.warm { background: rgba(255,138,76,.14); color: #ff9a4c; }
+.stat-icon.cyan { background: rgba(62,201,255,.13); color: var(--primary-2); }
+.stat-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+.stat-value { font-size: 30px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.stat-value small { font-size: 15px; color: var(--muted); font-weight: 600; margin-left: 4px; letter-spacing: 0; }
+.stat-foot { font-size: 12.5px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+.stat-foot .up { color: var(--success); font-weight: 700; }
+.stat::after {
+  content: ""; position: absolute; width: 140px; height: 140px; right: -50px; top: -50px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,108,255,.18), transparent 70%); pointer-events: none;
+}
+
+/* Week strip (Dashboard) */
+.week-strip { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 10px; }
+.ws-day {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 6px 12px; border-radius: 16px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  transition: transform .25s var(--ease), background .25s, border-color .25s;
+  min-width: 0;
+}
+.ws-day:hover { transform: translateY(-3px); background: rgba(255,255,255,.06); border-color: var(--border-strong); }
+.ws-name { font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.ws-num { font-size: 19px; font-weight: 750; }
+.ws-dot { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: rgba(255,255,255,.05); color: var(--muted); }
+.ws-dot .i { width: 16px; height: 16px; }
+.ws-label { font-size: 11px; color: var(--text-2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+.ws-day.done .ws-dot { background: var(--grad-success); color: #06210f; }
+.ws-day.missed .ws-dot { background: rgba(255,92,122,.15); color: var(--danger); }
+.ws-day.today { border-color: rgba(124,108,255,.55); background: rgba(124,108,255,.1); box-shadow: 0 0 0 4px rgba(124,108,255,.08); }
+.ws-day.today .ws-dot { background: var(--grad-primary); color: #fff; }
+.ws-day.t-recovery:not(.done) .ws-dot { color: var(--recovery); }
+
+/* Next workout */
+.next-when { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--primary-2); text-transform: uppercase; letter-spacing: .08em; }
+.next-title { font-size: 21px; font-weight: 750; letter-spacing: -.02em; margin: 6px 0 4px; }
+.mini-list { list-style: none; margin: 16px 0 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.mini-list li { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; padding: 9px 12px; border-radius: 10px; background: rgba(255,255,255,.03); }
+.mini-list li span:last-child { color: var(--muted); font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+
+/* Motivation */
+.motivation {
+  background:
+    radial-gradient(100% 120% at 100% 0%, rgba(200,255,77,.12), transparent 55%),
+    var(--card);
+}
+.motivation blockquote { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -.01em; line-height: 1.35; }
+.status-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.tone-success .card-title .i { color: var(--success); }
+.tone-warning .card-title .i { color: var(--warning); }
+
+/* =====================================================================
+   PLAN VIEW
+   ===================================================================== */
+.week-tabs-wrap { position: sticky; top: 0; z-index: 5; margin: -6px -4px 20px; padding: 6px 4px 10px; background: linear-gradient(var(--bg) 70%, transparent); }
+.week-tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; scroll-behavior: smooth; }
+.week-tabs::-webkit-scrollbar { display: none; }
+.week-tab {
+  flex-shrink: 0; position: relative;
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 10px 16px 11px; border-radius: 14px; min-width: 104px;
+  background: rgba(255,255,255,.035); border: 1px solid var(--border);
+  font-size: 13.5px; font-weight: 600; color: var(--text-2); text-align: left;
+  transition: background .25s, color .25s, border-color .25s, transform .2s;
+}
+.week-tab:hover { background: rgba(255,255,255,.07); color: var(--text); }
+.week-tab.active { background: linear-gradient(135deg, rgba(124,108,255,.28), rgba(62,201,255,.12)); border-color: rgba(124,108,255,.5); color: #fff; }
+.week-tab.current::after {
+  content: "AKTUELL"; position: absolute; top: -7px; right: 10px;
+  font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 2px 6px; border-radius: 6px;
+  background: var(--grad-primary); color: #fff;
+}
+.wt-bar { display: block; height: 3px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+.wt-bar b { display: block; height: 100%; background: var(--grad-success); border-radius: inherit; transition: width .6s var(--ease); }
+
+.week-head { display: flex; gap: 24px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.week-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.week-head .nav-arrows { display: flex; gap: 8px; }
+.week-kpis { display: flex; gap: 26px; flex-wrap: wrap; }
+.kpi { display: flex; flex-direction: column; }
+.kpi strong { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.kpi span { font-size: 12px; color: var(--muted); }
+
+.day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+@media (min-width: 1500px) { .day-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.day-card {
+  position: relative; text-align: left;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 18px; border-radius: 18px; min-height: 220px;
+  background: var(--card); border: 1px solid var(--border);
+  transition: transform .3s var(--ease), border-color .3s, box-shadow .3s, background .3s;
+  animation: rise .5s var(--ease) both; animation-delay: calc(var(--i,0) * 45ms);
+  overflow: hidden;
+}
+.day-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--type-grad, var(--grad-primary)); opacity: .9;
+}
+.day-card:hover { transform: translateY(-4px); border-color: var(--border-strong); box-shadow: var(--shadow); }
+.day-card:active { transform: translateY(-1px) scale(.99); }
+.day-card.t-recovery { --type-grad: var(--grad-recovery); }
+.day-card.t-optional { --type-grad: var(--grad-warm); }
+.day-card.t-rest { --type-grad: linear-gradient(90deg, #3a3f52, #2a2e3c); background: rgba(255,255,255,.015); }
+.day-card.is-today { border-color: rgba(124,108,255,.6); box-shadow: 0 0 0 4px rgba(124,108,255,.1), var(--shadow); }
+.day-card.s-done-card { background: linear-gradient(180deg, rgba(47,227,154,.07), rgba(47,227,154,.01)); border-color: rgba(47,227,154,.22); }
+.day-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.day-name { font-weight: 700; font-size: 14px; display: block; }
+.day-date { font-size: 12px; color: var(--muted); }
+.day-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(124,108,255,.13); color: #a99eff; margin-top: 4px; }
+.t-recovery .day-icon { background: rgba(54,214,195,.12); color: var(--recovery); }
+.t-optional .day-icon { background: rgba(255,138,76,.12); color: #ff9a4c; }
+.t-rest .day-icon { background: rgba(255,255,255,.05); color: var(--muted); }
+.day-card h3 { font-size: 15.5px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; }
+.day-card p { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.day-meta { margin-top: auto; display: flex; gap: 12px; font-size: 12px; color: var(--text-2); }
+.day-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.day-meta .i { width: 14px; height: 14px; color: var(--muted); }
+
+/* =====================================================================
+   EXERCISES (Modal & Today)
+   ===================================================================== */
+.check {
+  width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px;
+  display: grid; place-items: center;
+  border: 2px solid rgba(255,255,255,.18);
+  color: transparent;
+  transition: background .25s, border-color .25s, color .2s, transform .2s var(--spring);
+}
+.check:hover { border-color: var(--success); }
+.check:active { transform: scale(.85); }
+.check .i { width: 18px; height: 18px; stroke-width: 3; }
+.check.checked { background: var(--grad-success); border-color: transparent; color: #06210f; }
+.check.pop { animation: checkPop .45s var(--spring); }
+.check.sm { width: 28px; height: 28px; border-radius: 9px; }
+
+.ex-list { display: flex; flex-direction: column; gap: 12px; }
+.ex {
+  border-radius: 16px; padding: 16px;
+  background: rgba(255,255,255,.03); border: 1px solid var(--border);
+  transition: background .3s, border-color .3s, opacity .3s;
+}
+.ex.is-done { background: rgba(47,227,154,.05); border-color: rgba(47,227,154,.2); }
+.ex.is-done h4 { color: var(--text-2); }
+.ex-head { display: flex; align-items: center; gap: 14px; }
+.ex-title { flex: 1; min-width: 0; }
+.ex-title h4 { font-size: 16px; font-weight: 700; transition: color .3s; }
+.ex-target { font-size: 12.5px; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+.ex-plan-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 13px; color: var(--text-2); background: rgba(124,108,255,.07); border-radius: 10px; padding: 9px 12px; }
+.ex-plan-note .i { width: 15px; height: 15px; margin-top: 2px; color: #a99eff; }
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 14px; }
+.spec { background: rgba(0,0,0,.22); border: 1px solid var(--border); border-radius: 13px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.spec span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.spec strong { font-size: 17px; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.specs.big { margin: 0 0 22px; }
+.specs.big .spec { padding: 16px; border-radius: 16px; text-align: center; }
+.specs.big .spec strong { font-size: 26px; letter-spacing: -.02em; }
+.sets-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field > span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.input, .field input, .field select, textarea.input {
+  width: 100%;
+  background: rgba(0,0,0,.25);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 10px 12px;
+  font-size: 14.5px; font-weight: 600;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.input:focus, .field input:focus, .field select:focus, textarea.input:focus { border-color: rgba(124,108,255,.7); box-shadow: 0 0 0 4px rgba(124,108,255,.15); background: rgba(0,0,0,.35); }
+textarea.input { resize: vertical; min-height: 44px; font-weight: 450; font-size: 13.5px; line-height: 1.45; margin-top: 10px; }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+select.input, .field select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 34px; }
+select option { background: var(--surface-2); }
+
+.set-dots { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.set-dot {
+  width: 26px; height: 26px; border-radius: 8px;
+  border: 2px solid rgba(255,255,255,.15);
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  display: grid; place-items: center;
+  transition: background .2s, border-color .2s, transform .2s var(--spring), color .2s;
+}
+.set-dot:hover { border-color: var(--success); transform: scale(1.08); }
+.set-dot.on { background: var(--grad-success); border-color: transparent; color: #06210f; }
+
+.ex-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 14px; border-radius: 14px;
+  background: rgba(255,255,255,.03); border: 1px solid transparent;
+  transition: background .25s, border-color .25s;
+}
+.ex-row:hover { background: rgba(255,255,255,.055); border-color: var(--border); }
+.ex-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ex-row-main strong { font-weight: 650; font-size: 15px; transition: color .3s; }
+.ex-row-main span { font-size: 12.5px; color: var(--muted); font-family: var(--mono); }
+.ex-row.is-done strong { color: var(--muted); text-decoration: line-through; text-decoration-color: rgba(47,227,154,.6); }
+.ex-row-sets { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text-2); padding: 5px 10px; border-radius: 8px; background: rgba(255,255,255,.05); }
+.ex-row.is-done .ex-row-sets { color: var(--success); background: rgba(47,227,154,.1); }
+
+/* =====================================================================
+   MODAL
+   ===================================================================== */
+.modal-root { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; visibility: hidden; pointer-events: none; }
+.modal-root.open { visibility: visible; pointer-events: auto; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(3,4,8,.7); backdrop-filter: blur(8px); opacity: 0; transition: opacity .3s; }
+.modal-root.open .modal-backdrop { opacity: 1; }
+.modal {
+  position: relative; width: min(860px, 100%); max-height: min(92vh, 980px);
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #151826, #0e1018);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 40px 120px -20px rgba(0,0,0,.85);
+  transform: translateY(24px) scale(.97); opacity: 0;
+  transition: transform .4s var(--ease), opacity .3s;
+}
+.modal-root.open .modal { transform: none; opacity: 1; }
+.modal-head { padding: 24px 26px 18px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+.modal-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.modal-head h2 { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+.modal-body { padding: 20px 26px; overflow-y: auto; overscroll-behavior: contain; }
+.modal-foot { padding: 16px 26px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; }
+.modal-foot .grow { flex: 1; }
+.progress-line { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-2); }
+.progress-line .bar { flex: 1; }
+.section-label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 700; margin: 22px 0 10px; display: flex; align-items: center; gap: 8px; }
+
+/* =====================================================================
+   FOCUS MODE
+   ===================================================================== */
+.focus-root {
+  position: fixed; inset: 0; z-index: 60;
+  background:
+    radial-gradient(900px 600px at 20% -10%, rgba(124,108,255,.22), transparent 60%),
+    radial-gradient(700px 500px at 110% 110%, rgba(62,201,255,.14), transparent 60%),
+    var(--bg);
+  overflow-y: auto;
+  visibility: hidden; opacity: 0; transform: scale(1.02);
+  transition: opacity .35s, transform .45s var(--ease), visibility .35s;
+}
+.focus-root.open { visibility: visible; opacity: 1; transform: none; }
+.focus-shell { max-width: 1180px; margin: 0 auto; padding: 22px 24px 40px; display: flex; flex-direction: column; gap: 18px; min-height: 100%; }
+.focus-head { display: flex; align-items: center; gap: 16px; }
+.focus-head .title { flex: 1; min-width: 0; }
+.focus-head h2 { font-size: 20px; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.focus-count { font-family: var(--mono); font-weight: 700; color: var(--text-2); font-size: 14px; }
+.focus-strip { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.focus-strip::-webkit-scrollbar { display: none; }
+.fx-chip {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px 8px 8px; border-radius: 99px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+  transition: background .25s, border-color .25s, color .25s;
+}
+.fx-chip:hover { background: rgba(255,255,255,.08); }
+.fx-num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.08); font-size: 11px; font-weight: 800; }
+.fx-num .i { width: 13px; height: 13px; stroke-width: 3; }
+.fx-chip.done .fx-num { background: var(--grad-success); color: #06210f; }
+.fx-chip.active { border-color: rgba(124,108,255,.6); background: rgba(124,108,255,.16); color: #fff; }
+.fx-chip.active .fx-num { background: var(--grad-primary); color: #fff; }
+
+.focus-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
+.focus-card { padding: 30px; animation: slideIn .45s var(--ease) both; }
+.focus-card h1 { font-size: clamp(30px, 4.4vw, 52px); font-weight: 850; letter-spacing: -.035em; line-height: 1.04; margin: 6px 0 14px; }
+.big-sets { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 12px; }
+.big-sets strong { font-size: 64px; font-weight: 850; line-height: 1; letter-spacing: -.04em; background: var(--grad-primary); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.big-sets span { font-size: 22px; color: var(--muted); font-weight: 700; }
+.focus-sets { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 26px; }
+.focus-sets .set-dot { width: 46px; height: 46px; border-radius: 14px; font-size: 15px; }
+.focus-foot { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: auto; }
+
+.finish { text-align: center; max-width: 620px; margin: 6vh auto 0; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: popIn .6s var(--spring) both; }
+.finish-badge { width: 110px; height: 110px; border-radius: 34px; display: grid; place-items: center; background: var(--grad-success); color: #06210f; box-shadow: 0 20px 60px -10px rgba(47,227,154,.55); }
+.finish-badge .i { width: 54px; height: 54px; }
+.finish h1 { font-size: clamp(30px, 5vw, 46px); font-weight: 850; letter-spacing: -.03em; }
+.finish-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; width: 100%; margin: 12px 0; }
+.finish-stats .card { padding: 16px; text-align: center; }
+.finish-stats strong { display: block; font-size: 24px; font-weight: 800; }
+.finish-stats span { font-size: 12px; color: var(--muted); }
+
+/* =====================================================================
+   TIMER
+   ===================================================================== */
+.timer-widget { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.timer-ring { position: relative; }
+.timer-ring svg { width: 100%; height: 100%; display: block; }
+.timer-fg { transition: stroke-dashoffset .25s linear; }
+.timer-widget.ending .timer-fg { stroke: url(#gradWarm); }
+.timer-widget.finished .timer-fg { stroke: url(#gradSuccess); }
+.timer-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.timer-text { font-family: var(--mono); font-weight: 800; font-size: 3.2em; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.timer-sub { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin-top: 8px; font-weight: 700; }
+.timer-widget.running .timer-sub { color: var(--primary-2); }
+.timer-widget.finished .timer-sub { color: var(--success); }
+.timer-widget.finished .timer-ring { animation: ringPulse 1s ease 2; }
+.timer-controls { display: flex; align-items: center; gap: 12px; }
+.btn-round {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--grad-primary); color: #fff; box-shadow: var(--glow);
+  transition: transform .2s var(--spring), box-shadow .25s;
+}
+.btn-round:hover { transform: scale(1.06); }
+.btn-round:active { transform: scale(.92); }
+.btn-round .i { width: 26px; height: 26px; }
+.presets { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.preset {
+  padding: 8px 14px; border-radius: 11px; font-weight: 700; font-size: 13px; font-family: var(--mono);
+  background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2);
+  transition: background .2s, color .2s, border-color .2s, transform .15s;
+}
+.preset:hover { background: rgba(255,255,255,.1); color: var(--text); }
+.preset:active { transform: scale(.94); }
+.preset.active { background: rgba(124,108,255,.2); border-color: rgba(124,108,255,.55); color: #fff; }
+.timer-widget.compact { gap: 14px; }
+.timer-widget.compact .timer-text { font-size: 2.4em; }
+.timer-widget.compact .btn-round { width: 54px; height: 54px; }
+
+.toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+.switch { width: 46px; height: 26px; border-radius: 99px; background: rgba(255,255,255,.12); position: relative; transition: background .25s; flex-shrink: 0; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .3s var(--spring); }
+.switch.on { background: var(--grad-primary); }
+.switch.on::after { transform: translateX(20px); }
+
+.rest-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.rest-table td { padding: 11px 0; border-bottom: 1px solid var(--border); }
+.rest-table td:last-child { text-align: right; font-family: var(--mono); color: var(--text-2); }
+
+/* =====================================================================
+   CHARTS
+   ===================================================================== */
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.grid-line { stroke: rgba(255,255,255,.06); stroke-dasharray: 3 5; }
+.axis-label { fill: var(--muted); font-size: 12px; text-anchor: middle; font-family: var(--font); }
+.axis-label.hl { fill: #fff; font-weight: 700; }
+.axis-y { fill: var(--muted); font-size: 11px; text-anchor: end; font-family: var(--font); }
+.bar-bg { fill: rgba(255,255,255,.05); }
+.bar-fg { transform-box: fill-box; transform-origin: bottom; animation: barGrow .9s var(--ease) both; transition: opacity .2s; }
+.bar-fg:hover { opacity: .8; }
+.bar-val { fill: var(--text-2); font-size: 11.5px; text-anchor: middle; font-weight: 700; font-family: var(--font); }
+.line-path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s var(--ease) forwards; }
+.line-dashed { fill: none; stroke-width: 2; stroke-dasharray: 6 6; opacity: .55; animation: fadeIn 1s ease both; }
+.line-area { animation: fadeIn 1.2s ease both; }
+.line-dot { stroke: var(--bg); stroke-width: 3; transition: r .2s; }
+.line-dot:hover { r: 7; }
+.no-anim .bar-fg, .no-anim .line-path { animation: none; stroke-dashoffset: 0; }
+.chart-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-2); }
+.chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.chart-legend i { width: 12px; height: 4px; border-radius: 3px; display: inline-block; }
+.chart-empty { display: grid; place-items: center; text-align: center; gap: 8px; padding: 40px 10px; color: var(--muted); font-size: 14px; }
+.chart-empty .i { width: 30px; height: 30px; }
+
+.rings-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 20px; }
+.ring-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+.ring-card h3 { font-size: 14px; font-weight: 650; }
+.ring-card p { font-size: 12.5px; color: var(--muted); }
+
+.week-bars { display: flex; flex-direction: column; gap: 12px; }
+.week-bar-row { display: grid; grid-template-columns: 80px minmax(0,1fr) 54px; gap: 14px; align-items: center; font-size: 13px; cursor: pointer; padding: 4px 6px; border-radius: 10px; transition: background .2s; }
+.week-bar-row:hover { background: rgba(255,255,255,.04); }
+.week-bar-row .wl { color: var(--text-2); font-weight: 600; }
+.week-bar-row .wv { text-align: right; font-family: var(--mono); color: var(--muted); font-size: 12.5px; }
+.week-bar-row.current .wl { color: #fff; }
+
+.heatmap { display: grid; grid-template-columns: 30px repeat(var(--cols), minmax(0, 1fr)); gap: 5px; align-items: center; }
+.hm-head, .hm-row { font-size: 10.5px; color: var(--muted); text-align: center; font-weight: 600; }
+.hm-row { text-align: left; }
+.hm-cell { aspect-ratio: 1; max-height: 34px; border-radius: 6px; background: rgba(255,255,255,.04); transition: transform .2s var(--spring); }
+.hm-cell:not([disabled]):hover { transform: scale(1.2); z-index: 1; }
+.hm-done { background: var(--success); box-shadow: 0 0 12px -2px rgba(47,227,154,.5); }
+.hm-done.t-optional { background: #ff9a4c; box-shadow: none; }
+.hm-done.t-recovery { background: rgba(54,214,195,.55); box-shadow: none; }
+.hm-missed { background: rgba(255,92,122,.5); }
+.hm-today { background: transparent; border: 2px solid var(--primary); }
+.hm-upcoming { background: rgba(124,108,255,.14); }
+.hm-skipped { background: rgba(255,255,255,.07); }
+.hm-rest { background: rgba(255,255,255,.025); }
+.hm-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; font-size: 12px; color: var(--muted); }
+.hm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.hm-legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+/* =====================================================================
+   EMPTY STATE, TOAST, CONFETTI
+   ===================================================================== */
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 40px 20px; }
+.empty-icon { width: 76px; height: 76px; border-radius: 24px; display: grid; place-items: center; background: rgba(124,108,255,.12); color: #a99eff; margin-bottom: 6px; }
+.empty-icon .i { width: 34px; height: 34px; }
+.empty h3 { font-size: 20px; font-weight: 750; }
+.empty p { color: var(--text-2); max-width: 440px; }
+
+.toast-stack { position: fixed; z-index: 100; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 18px 13px 14px; border-radius: 15px;
+  background: rgba(22,25,36,.92); border: 1px solid var(--border-strong);
+  backdrop-filter: blur(16px); box-shadow: var(--shadow);
+  font-size: 14px; font-weight: 550;
+  animation: toastIn .45s var(--spring) both;
+  max-width: 360px;
+}
+.toast.out { animation: toastOut .3s ease forwards; }
+.toast-icon { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: rgba(124,108,255,.18); color: #b3a9ff; flex-shrink: 0; }
+.toast.success .toast-icon { background: rgba(47,227,154,.16); color: var(--success); }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 120; width: 100%; height: 100%; }
+
+/* =====================================================================
+   ANIMATIONS
+   ===================================================================== */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes viewIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes slideIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes fill { from { width: 0; } }
+@keyframes barGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes popIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes checkPop { 0% { transform: scale(.6); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(62,201,255,.6); } 70% { box-shadow: 0 0 0 9px rgba(62,201,255,0); } 100% { box-shadow: 0 0 0 0 rgba(62,201,255,0); } }
+@keyframes ringPulse { 50% { transform: scale(1.04); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(.95); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 1280px) {
+  .span-3 { grid-column: span 6; }
+  .span-4, .span-5 { grid-column: span 6; }
+  .span-7, .span-8 { grid-column: span 12; }
+  .rings-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .focus-grid { grid-template-columns: minmax(0,1fr) 300px; }
+}
+@media (max-width: 1060px) {
+  :root { --sidebar-w: 84px; }
+  .sidebar { padding: 22px 12px; align-items: center; }
+  .brand-text, .nav-label, .nav-item span, .nav-badge, .side-card, .link-btn span { display: none; }
+  .nav-item { justify-content: center; padding: 13px; }
+  .nav-item.active::before { left: -12px; }
+  .main { padding: 24px 24px 60px; }
+  .span-4, .span-5, .span-6 { grid-column: span 12; }
+  .focus-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  body { font-size: 14.5px; }
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 18px 14px calc(96px + env(safe-area-inset-bottom)); }
+  .grid { gap: 14px; }
+  .span-3 { grid-column: span 6; }
+  .card { padding: 18px; border-radius: 18px; }
+  .hero { flex-direction: column; align-items: stretch; padding: 22px; min-height: 0; }
+  .hero-side { align-self: center; }
+  .stat-value { font-size: 25px; }
+  .stat-icon { width: 36px; height: 36px; margin-bottom: 4px; }
+  .week-strip { gap: 5px; }
+  .ws-day { padding: 10px 2px; border-radius: 12px; }
+  .ws-label { display: none; }
+  .ws-dot { width: 26px; height: 26px; border-radius: 8px; }
+  .ws-num { font-size: 16px; }
+  .day-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .day-card { min-height: 190px; padding: 14px; }
+  .specs { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .specs.big .spec strong { font-size: 22px; }
+  .rings-row { gap: 12px; }
+  .finish-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .focus-shell { padding: 14px 14px 30px; }
+  .focus-card { padding: 22px; }
+  .big-sets strong { font-size: 52px; }
+  .focus-foot .btn { padding: 12px 14px; }
+  .toast-stack { left: 14px; right: 14px; bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .toast { max-width: none; }
+  .week-head { gap: 16px; }
+  .wrow { grid-template-columns: 1fr auto; gap: 10px; }
+  .wrow-main { grid-column: 1 / -1; }
+
+  .modal-root { padding: 0; place-items: end stretch; }
+  .modal { width: 100%; max-height: 94vh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
+  .modal-head, .modal-body, .modal-foot { padding-left: 18px; padding-right: 18px; }
+  .modal-foot { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+
+  .bottom-nav {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 30;
+    padding: 6px; border-radius: 22px;
+    background: rgba(16,18,26,.88); border: 1px solid var(--border-strong);
+    backdrop-filter: blur(20px); box-shadow: var(--shadow);
+  }
+  .bn-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 15px; font-size: 10px; font-weight: 600; color: var(--muted); transition: color .2s, background .2s; }
+  .bn-item .i { width: 21px; height: 21px; }
+  .bn-item.active { color: #fff; background: rgba(124,108,255,.18); }
+  .bn-item.active .i { color: var(--primary-2); }
+}
+@media (max-width: 400px) {
+  .span-3 { grid-column: span 12; }
+  .day-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+<!-- Globale SVG-Verläufe (werden von Ringen & Charts per url(#id) referenziert) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradPrimary" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c6cff"/><stop offset="1" stop-color="#3ec9ff"/></linearGradient>
+    <linearGradient id="gradPrimaryV" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#7c6cff"/><stop offset="1" stop-color="#3ec9ff"/></linearGradient>
+    <linearGradient id="gradSuccess" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2fe39a"/><stop offset="1" stop-color="#c8ff4d"/></linearGradient>
+    <linearGradient id="gradWarm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a4c"/><stop offset="1" stop-color="#ff4d8d"/></linearGradient>
+    <linearGradient id="gradRecovery" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36d6c3"/><stop offset="1" stop-color="#3ec9ff"/></linearGradient>
+    <linearGradient id="areaPrimary" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c6cff" stop-opacity=".35"/><stop offset="1" stop-color="#7c6cff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="areaSuccess" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2fe39a" stop-opacity=".3"/><stop offset="1" stop-color="#2fe39a" stop-opacity="0"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="app">
+  <!-- Sidebar (Desktop/Tablet) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo"></div>
+      <div class="brand-text">
+        <div class="brand-name" id="brandName">APEX</div>
+        <div class="brand-sub" id="brandSub">Performance Plan</div>
+      </div>
+    </div>
+    <nav class="nav" id="sideNav" aria-label="Hauptnavigation"></nav>
+    <div class="side-card" id="sideCard"></div>
+    <div class="side-actions" id="sideActions"></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow" id="topEyebrow"></div>
+        <h1 id="viewTitle"></h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="timer-pill" id="timerPill" data-route="timer" aria-label="Zum Pausentimer">
+          <span class="pulse"></span><span data-timer-text>00:00</span>
+        </button>
+        <div class="avatar" id="avatar" title="Profil"></div>
+      </div>
+    </header>
+    <section id="view" class="view" aria-live="polite"></section>
+  </main>
+
+  <!-- Bottom-Navigation (Smartphone) -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Navigation"></nav>
+</div>
+
+<!-- Workout-Detail-Modal -->
+<div class="modal-root" id="modalRoot" aria-hidden="true">
+  <div class="modal-backdrop" data-action="close-modal"></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modal"></div>
+</div>
+
+<!-- Fokus-Workout-Ansicht -->
+<div class="focus-root" id="focusRoot" aria-hidden="true"></div>
+
+<div class="toast-stack" id="toasts" aria-live="polite"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+'use strict';
+
+/* =======================================================================
+   3.1 KONFIGURATION
+   ======================================================================= */
+const PLAN_CONFIG = {
+  appName: 'APEX',
+  planName: 'Fit & Gesund',
+  athlete: 'Margit',            // Dein Name für Begrüßung & Avatar
+  // Startdatum des Plans im Format 'JJJJ-MM-TT'. Die erste Woche beginnt am Montag davor;
+  // Tage vor dem Startdatum, die im Plan fehlen, werden einfach nicht angezeigt.
+  // 'auto' = Demo-Modus: Plan startet 2 Wochen vor der aktuellen Woche.
+  startDate: '2027-01-01',
+  // Bei Austausch des Plans den Key ändern, damit alte Fortschrittsdaten nicht auf neue Übungen gemappt werden.
+  storageKey: 'margit-plan-2027-v1',
+  // true = beim ersten Start eine Demo-Historie (bereits erledigte Workouts) erzeugen.
+  seedDemoProgress: false,
+  // Zum Testen ein anderes "Heute" erzwingen, z. B. '2026-11-12'. null = echtes Datum.
+  debugToday: null,
+  weightUnit: 'kg'
+};
+
+// ========================================
+// TRAININGSPLAN HIER EINFÜGEN
+// ========================================
+/*
+  Ersetze `trainingPlan` durch deinen echten Plan. Format:
+
+  const trainingPlan = [
+    {                                   // ── Woche 1
+      title: 'Grundlagen aufbauen',     // Überschrift der Woche (optional)
+      phase: 'Akkumulation',            // Trainingsphase (optional)
+      focus: 'Technik & Volumen',       // Wochenziel (optional)
+      days: [
+        {
+          day: 'Montag',                // Montag … Sonntag (bestimmt das Datum innerhalb der Woche)
+          type: 'training',             // 'training' | 'optional' | 'recovery' | 'rest'
+          name: 'Training A – Push',
+          focus: 'Brust · Schultern · Trizeps',   // optional
+          duration: 60,                 // geplante Minuten (optional)
+          description: '',              // Freitext, v. a. für recovery/rest (optional)
+          exercises: [
+            {
+              name: 'Bankdrücken',
+              sets: 4,
+              reps: 8,                  // Zahl (bei Zeit-Übungen: Dauer + unit: 'Sek' bzw. 'Min')
+              weight: 80,               // kg, 0 = Körpergewicht
+              rest: 120,                // Pause in Sekunden
+              rpe: 8,                   // Ziel-RPE (optional)
+              notes: 'Kontrollierte Exzentrik', // Coaching-Hinweis (optional)
+              unit: 'Wdh.'              // optional: 'Wdh.' (Standard), 'Sek' oder 'Min' (Cardio)
+            }
+          ]
+        },
+        { day: 'Dienstag', type: 'recovery', name: 'Regeneration', description: 'Mobility & lockeres Cardio' },
+        { day: 'Donnerstag', type: 'rest', name: 'Pause' }
+      ]
+    }
+    // , { … Woche 2 … }
+  ];
+
+  Die Anzahl der Wochen und Tage ist frei. Die Dashboard-Logik passt sich automatisch an.
+  Bei Austausch zusätzlich `seedDemoProgress: false` und ein neues `storageKey` setzen.
+*/
+const trainingPlan = buildPlan();
+// ========================================
+// ENDE TRAININGSPLAN
+// ========================================
+
+
+/* =======================================================================
+   3.3 PLAN-GENERATOR
+   Erzeugt den 26-Wochen-Plan aus Vorlagen. Wird nicht benötigt, sobald
+   `trainingPlan` oben direkt als Array von Hand geschrieben wird.
+   Läuft vor allen anderen Definitionen – deshalb bewusst eigenständig.
+   ======================================================================= */
+function buildPlan() {
+  const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+  const FIRST_DAY = 4;   // Plan startet an einem Freitag → Woche 1 enthält nur Fr–So
+
+  // Übungsvariante: Name, Zusatzgewicht (kg, 0 = Körpergewicht), Hinweis, Pause (s), Basis-Sekunden bei Zeit-Übungen
+  const x = (name, w, notes, rest = 60, timed = 0) => ({ name, w, notes, rest, timed });
+
+  // Jeder Slot enthält 4 Varianten, eine je Phase (Einstieg → Fundament → Aufbau → Kondition & Kraft)
+  const GOBLET = 'Kurzhantel mit beiden Händen vor der Brust halten, Ellbogen zeigen nach unten, Oberkörper aufrecht.';
+  const HIPTHRUST = 'Oberer Rücken auf Sofa oder Bank, Kurzhantel auf dem Becken. Oben 1 Sek. halten, Gesäß anspannen.';
+  const LUNGE_DB = 'Je Hand eine Kurzhantel (Gewicht gilt pro Hantel). Großer Schritt nach hinten, Wiederholungen pro Seite.';
+  const ROW_DB = 'Eine Hand und ein Knie auf Stuhl oder Sofa, Rücken gerade. Hantel zur Hüfte ziehen. Wiederholungen pro Seite.';
+  const ROW_BAND = 'Band an stabilem Punkt in Brusthöhe befestigen. Schulterblätter zusammenziehen, Ellbogen nah am Körper.';
+  const PRESS = 'Im Stehen oder Sitzen, Rippen unten lassen, nicht ins Hohlkreuz fallen.';
+  const STEPUP = 'Mit der ganzen Fußsohle auf die Stufe, kontrolliert wieder absteigen. Wiederholungen pro Seite.';
+  const HINGE = 'Rücken gerade, Gesäß nach hinten schieben, Knie leicht gebeugt. Hanteln eng an den Beinen entlang führen.';
+  const PLANK = 'Körper bildet eine Linie, Bauch fest, ruhig weiteratmen. Bei Bedarf auf die Knie absenken.';
+
+  const TRAINING = {
+    A: { name: 'Training A – Beine & Po', focus: 'Beine · Gesäß · Core', slots: [
+      [x('Kniebeuge zum Stuhl', 0, 'Setz dich kontrolliert auf den Stuhl und stehe ohne Schwung wieder auf. Knie zeigen Richtung Fußspitzen.'),
+       x('Kniebeuge', 0, 'Füße schulterbreit, Brust aufrecht, Gewicht auf dem ganzen Fuß. Nur so tief, wie es sich gut anfühlt.'),
+       x('Goblet Squat', 4, GOBLET, 75), x('Goblet Squat', 6, GOBLET, 75)],
+      [x('Glute Bridge', 0, 'Auf dem Rücken, Füße aufgestellt. Becken anheben, oben das Gesäß kurz anspannen.', 45),
+       x('Glute Bridge (Band über den Knien)', 0, 'Band leicht nach außen drücken, Becken kontrolliert heben und senken.', 45),
+       x('Hip Thrust (Kurzhantel)', 6, HIPTHRUST), x('Hip Thrust (Kurzhantel)', 8, HIPTHRUST)],
+      [x('Ausfallschritt rückwärts (mit Halt)', 0, 'Mit einer Hand an Wand oder Stuhl festhalten. Wiederholungen pro Seite.'),
+       x('Ausfallschritt rückwärts', 0, 'Großer Schritt nach hinten, Oberkörper aufrecht. Wiederholungen pro Seite.'),
+       x('Ausfallschritt rückwärts (Kurzhanteln)', 3, LUNGE_DB), x('Ausfallschritt rückwärts (Kurzhanteln)', 4, LUNGE_DB)],
+      [x('Wand-Liegestütze', 0, 'Abstand etwa eine Armlänge zur Wand. Ellbogen schräg nach hinten, Körper bleibt gerade.'),
+       x('Schräge Liegestütze (Hände erhöht)', 0, 'Hände auf Tisch oder Sofakante. Je flacher der Winkel, desto schwerer.'),
+       x('Schräge Liegestütze (niedrige Erhöhung)', 0, 'Hände auf einer Treppenstufe oder einem Kissenstapel.'),
+       x('Liegestütze auf Knien', 0, 'Körper bildet eine Linie von Knien bis Kopf. Brust kontrolliert Richtung Boden.')],
+      [x('Unterarmstütz auf Knien', 0, PLANK, 45, 15), x('Unterarmstütz (Plank)', 0, PLANK, 45, 15),
+       x('Unterarmstütz (Plank)', 0, PLANK, 45, 25), x('Unterarmstütz (Plank)', 0, PLANK, 45, 35)]
+    ]},
+    B: { name: 'Training B – Oberkörper & Core', focus: 'Rücken · Schultern · Arme · Core', slots: [
+      [x('Rudern mit Band', 0, ROW_BAND), x('Rudern mit Band', 0, ROW_BAND),
+       x('Einarmiges Rudern (Kurzhantel)', 4, ROW_DB), x('Einarmiges Rudern (Kurzhantel)', 5, ROW_DB)],
+      [x('Schulterdrücken (Kurzhanteln)', 2, PRESS), x('Schulterdrücken (Kurzhanteln)', 3, PRESS),
+       x('Schulterdrücken (Kurzhanteln)', 4, PRESS), x('Schulterdrücken (Kurzhanteln)', 5, PRESS)],
+      [x('Seitheben (Kurzhanteln)', 1, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
+       x('Seitheben (Kurzhanteln)', 2, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
+       x('Seitheben (Kurzhanteln)', 2, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
+       x('Seitheben (Kurzhanteln)', 3, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.')],
+      [x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
+       x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
+       x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
+       x('Trizeps-Dips am Stuhl (Beine gestreckt)', 0, 'Fersen am Boden, Ellbogen nach hinten. Nur bis ca. 90° absenken.')],
+      [x('Bird Dog', 0, 'Auf allen Vieren gegenüberliegenden Arm und Bein strecken, Rücken ruhig. Wiederholungen pro Seite.', 45),
+       x('Dead Bug', 0, 'Rücken liegt am Boden, unterer Rücken bleibt in Kontakt. Wiederholungen pro Seite.', 45),
+       x('Dead Bug', 0, 'Rücken liegt am Boden, unterer Rücken bleibt in Kontakt. Wiederholungen pro Seite.', 45),
+       x('Fahrrad-Crunches', 0, 'Langsam und kontrolliert, Schultern nur leicht anheben. Wiederholungen pro Seite.', 45)]
+    ]},
+    C: { name: 'Training C – Ganzkörper-Kreislauf', focus: 'Ganzkörper · Kalorienverbrauch', slots: [
+      [x('Step-ups (Treppenstufe)', 0, STEPUP), x('Step-ups (Treppenstufe)', 0, STEPUP),
+       x('Step-ups mit Kurzhanteln', 3, STEPUP), x('Step-ups mit Kurzhanteln', 4, STEPUP)],
+      [x('Hüftbeuge mit Besenstiel', 0, 'Stab entlang der Wirbelsäule, Gesäß nach hinten schieben, Knie leicht gebeugt.'),
+       x('Rumänisches Kreuzheben (Kurzhanteln)', 3, HINGE), x('Rumänisches Kreuzheben (Kurzhanteln)', 5, HINGE),
+       x('Rumänisches Kreuzheben (Kurzhanteln)', 6, HINGE)],
+      [x('Brustpresse am Boden (Kurzhanteln)', 2, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
+       x('Brustpresse am Boden (Kurzhanteln)', 3, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
+       x('Brustpresse am Boden (Kurzhanteln)', 4, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
+       x('Brustpresse am Boden (Kurzhanteln)', 5, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.')],
+      [x('Marschieren auf der Stelle', 0, 'Knie locker anheben, Arme mitschwingen, ruhig atmen.', 45, 30),
+       x('Low-Impact-Hampelmann', 0, 'Ohne Sprung: Beine abwechselnd seitlich antippen, Arme über den Kopf.', 45, 30),
+       x('Hampelmann', 0, 'Bei Gelenkbeschwerden die Low-Impact-Variante nutzen.', 45, 40),
+       x('Skater-Schritte', 0, 'Seitlich von Fuß zu Fuß schwingen, weich landen.', 45, 40)],
+      [x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
+       x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
+       x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
+       x('Seitliches Beinheben (Band)', 0, 'Band über den Knien. In Seitenlage Bein anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45)]
+    ]}
+  };
+
+  const WARMUP = { name: 'Aufwärmen', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null,
+    notes: 'Schultern und Hüfte kreisen, Arme schwingen, auf der Stelle marschieren, 5 lockere Kniebeugen.' };
+  const COOLDOWN = { name: 'Dehnen & Entspannen', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null,
+    notes: 'Beine, Hüfte, Brust und Rücken je 20–30 Sek. dehnen und ruhig weiteratmen.' };
+
+  // Phasen. Die letzte Woche der ersten drei Phasen ist eine Erholungswoche (weniger Sätze).
+  const PHASES = [
+    { name: 'Einstieg', focus: 'Bewegungen sicher lernen und eine Routine aufbauen', rpe: 5, deload: true,
+      sets: [2, 2, 2, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 4, min: [2, 2, 2, 3, 3, 3] },
+      titles: ['Ankommen', 'Technik lernen', 'Mehr Wiederholungen', 'Dritter Satz', 'Sicherer werden', 'Routine festigen', 'Erholungswoche'] },
+    { name: 'Fundament', focus: 'Kondition und Kraftausdauer verbessern', rpe: 6, deload: true,
+      sets: [3, 3, 3, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 4, min: [3, 3, 3, 4, 4, 4] },
+      titles: ['Neue Übungsvarianten', 'Stabil werden', 'Mehr Ausdauer', 'Wiederholungen steigern', 'Kraftausdauer', 'Stark durchhalten', 'Erholungswoche'] },
+    { name: 'Aufbau', focus: 'Mit leichten Kurzhanteln stärker werden', rpe: 6.5, deload: true,
+      sets: [3, 3, 3, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 5, min: [3, 3, 3, 4, 4, 4] },
+      titles: ['Mit Hanteln starten', 'Gewichte spüren', 'Kontrolle & Tempo', 'Mehr Wiederholungen', 'Stärker werden', 'Kraft festigen', 'Erholungswoche'] },
+    { name: 'Kondition & Kraft', focus: 'Fitter, stärker und ausdauernder', rpe: 7, deload: false,
+      sets: [3, 3, 3, 3, 3], reps: [10, 12, 12, 10, 12], walk: { sets: 5, min: [4, 4, 5, 5, 5] },
+      titles: ['Neue Herausforderung', 'Ausdauer ausbauen', 'Wiederholungen steigern', 'Fit in den Endspurt', 'Abschluss & Rückblick'] }
+  ];
+
+  const strength = (tpl, level, c) => {
+    let seconds = 0;
+    const main = tpl.slots.map(variants => {
+      const e = variants[level], timed = e.timed > 0;
+      const reps = timed ? Math.min(60, e.timed + 5 * c.k) : c.reps;
+      seconds += c.sets * ((timed ? reps : reps * 4) + 15 + e.rest);
+      return { name: e.name, sets: c.sets, reps, unit: timed ? 'Sek' : 'Wdh.', weight: e.w, rest: e.rest, rpe: c.rpe, notes: e.notes };
+    });
+    return { name: tpl.name, focus: tpl.focus, duration: Math.round((10 + seconds / 60) / 5) * 5, exercises: [WARMUP, ...main, COOLDOWN] };
+  };
+
+  const walkIntervals = (sets, min) => ({
+    name: 'Cardio – Zügiges Walken', focus: 'Ausdauer · Fettverbrennung',
+    duration: Math.round((10 + sets * (min + 1.5)) / 5) * 5,
+    description: 'Am besten draußen: zwischen den zügigen Abschnitten gehst du locker weiter. Du solltest dich dabei nie völlig ausgepowert fühlen.',
+    exercises: [
+      { name: 'Einlaufen (lockeres Gehen)', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null, notes: 'Locker losgehen, Schultern entspannen, Arme mitschwingen.' },
+      { name: 'Zügiges Walken (Intervalle)', sets, reps: min, unit: 'Min', weight: 0, rest: 90, rpe: 6,
+        notes: 'Zügig = Atmung deutlich schneller, du kannst aber noch in kurzen Sätzen sprechen. In der Pause locker weitergehen.' },
+      { name: 'Auslaufen (lockeres Gehen)', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null, notes: 'Tempo langsam reduzieren, danach kurz dehnen.' }
+    ]
+  });
+
+  const longWalk = min => ({
+    name: 'Wanderung / langer Spaziergang', focus: 'Natur · Grundlagenausdauer', duration: min,
+    description: 'Raus in die Natur: Wald, Park oder eine Wanderung. Gern mit Hügeln oder Treppen. Wasser mitnehmen und bequeme Schuhe tragen.',
+    exercises: [{ name: 'Dauerwalken im Plaudertempo', sets: 1, reps: min, unit: 'Min', weight: 0, rest: 0, rpe: 4,
+      notes: 'Plaudertempo: Du kannst dich dabei noch gut unterhalten. Pausen sind erlaubt.' }]
+  });
+
+  const plan = [];
+  let w = 0;
+  PHASES.forEach((ph, level) => {
+    ph.titles.forEach((title, k) => {
+      const deload = ph.deload && k === ph.titles.length - 1;
+      const c = deload ? { sets: 2, reps: 10, rpe: 5, k: 0 } : { sets: ph.sets[k], reps: ph.reps[k], rpe: ph.rpe + (k >= 3 ? 0.5 : 0), k };
+      const walkSets = deload ? ph.walk.sets - 1 : ph.walk.sets;
+      const walkMin = deload ? ph.walk.min[0] : ph.walk.min[k];
+      const longMin = deload ? 30 : Math.min(75, Math.round((30 + 2 * w) / 5) * 5);
+      const last = w === 25;
+
+      const days = [
+        { day: 'Montag',     type: 'training', ...strength(TRAINING.A, level, c) },
+        { day: 'Dienstag',   type: 'optional', ...walkIntervals(walkSets, walkMin) },
+        { day: 'Mittwoch',   type: 'training', ...strength(TRAINING.B, level, c) },
+        { day: 'Donnerstag', type: 'recovery', name: 'Aktive Erholung', focus: 'Mobilität · Entspannung', duration: 15,
+          description: '10–15 Minuten sanfte Mobilisation für Nacken, Schultern, Hüfte und Rücken – oder ein lockerer Spaziergang. Viel trinken und früh schlafen gehen.' },
+        { day: 'Freitag',    type: 'training', ...strength(w === 0 ? TRAINING.A : TRAINING.C, level, c) },
+        { day: 'Samstag',    type: 'optional', ...longWalk(longMin) },
+        { day: 'Sonntag',    type: 'rest',     name: 'Ruhetag',
+          description: last ? 'Geschafft! Schau auf die 26 Wochen zurück: Wie fühlst du dich, was fällt dir leichter als am Anfang? Glückwunsch!'
+            : 'Kompletter Ruhetag. Schlaf, ausgewogene Ernährung und genug Wasser unterstützen deinen Fortschritt.' }
+      ];
+
+      plan.push({
+        title, phase: ph.name,
+        focus: deload ? 'Weniger Sätze – dein Körper wird in der Erholung stärker' : ph.focus,
+        days: w === 0 ? days.filter(d => DAYS.indexOf(d.day) >= FIRST_DAY) : days
+      });
+      w++;
+    });
+  });
+  return plan;
+}
+
+
+/* =======================================================================
+   3.4 UTILITIES
+   ======================================================================= */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const num = (v, d = 1) => Number(v).toLocaleString('de-DE', { maximumFractionDigits: d });
+const pct = v => Math.round((v || 0) * 100);
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+// Datum (immer lokale Kalendertage, ohne Uhrzeit)
+const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const parseISO = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+const toISO = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const diffDays = (a, b) => Math.round((startOfDay(b) - startOfDay(a)) / 864e5);   // b − a in Tagen
+const cmpDay = (a, b) => Math.sign(diffDays(b, a));                                 // -1 | 0 | 1
+const mondayOf = d => addDays(d, -((d.getDay() + 6) % 7));
+
+const WEEKDAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+const WD_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const fmtDate = (d, opts = { day: '2-digit', month: '2-digit' }) => d.toLocaleDateString('de-DE', opts);
+const fmtLong = d => d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const fmtTime = s => { s = Math.max(0, Math.ceil(s)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+const fmtWeight = w => w ? `${num(w, 2)} ${PLAN_CONFIG.weightUnit}` : 'Körpergew.';
+
+function relDay(d) {
+  const n = diffDays(TODAY, d);
+  if (n === 0) return 'Heute';
+  if (n === 1) return 'Morgen';
+  if (n === -1) return 'Gestern';
+  return n > 0 ? `In ${n} Tagen` : `Vor ${-n} Tagen`;
+}
+
+// Deterministischer Zufall (für reproduzierbare Demo-Historie)
+function mulberry32(a) {
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+
+// Icon-Set (Inline-SVG, Stroke-Icons)
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  zap: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  calendar: '<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/>',
+  chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  timer: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  flame: '<path d="M12 22c4 0 7-2.8 7-7 0-4.5-3.5-6.5-4.5-11-2 1.6-3.2 3.8-3 6.4C10.4 9.6 9.5 8.4 9.3 6.6 6.6 8.6 5 11.6 5 15c0 4.2 3 7 7 7z"/>',
+  dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>',
+  play: '<path d="M7 4.5v15l12.5-7.5z" fill="currentColor" stroke="none"/>',
+  pause: '<rect x="6" y="4.5" width="4" height="15" rx="1.2" fill="currentColor" stroke="none"/><rect x="14" y="4.5" width="4" height="15" rx="1.2" fill="currentColor" stroke="none"/>',
+  reset: '<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  left: '<path d="m15 18-6-6 6-6"/>',
+  right: '<path d="m9 18 6-6-6-6"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 4 13c0-6 6-9 16-9 0 10-3.5 16-9 16z"/><path d="M4 21c3-6 6.5-9 11-11"/>',
+  moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  trend: '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  note: '<path d="M4 4h16v11l-5 5H4z"/><path d="M15 20v-5h5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  sparkles: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+  activity: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  gauge: '<path d="M12 14l4-4"/><path d="M3.5 18a10 10 0 1 1 17 0"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+  award: '<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 8 5-3 5 3-1.5-8"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+  volume: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+  mute: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/>',
+  refresh: '<path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/>',
+  flag: '<path d="M4 22V4M4 4h13l-2 4 2 4H4"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>'
+};
+const icon = (name, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+
+const TYPE_META = {
+  training: { label: 'Training',     icon: 'dumbbell' },
+  optional: { label: 'Optional',     icon: 'sparkles' },
+  recovery: { label: 'Regeneration', icon: 'leaf' },
+  rest:     { label: 'Ruhetag',      icon: 'moon' }
+};
+const STATUS_META = {
+  done:     { label: 'Erledigt',    icon: 'check' },
+  today:    { label: 'Heute',       icon: 'zap' },
+  missed:   { label: 'Verpasst',    icon: 'x' },
+  skipped:  { label: 'Ausgelassen', icon: '' },
+  upcoming: { label: 'Geplant',     icon: '' },
+  rest:     { label: 'Ruhetag',     icon: '' }
+};
+
+
+/* =======================================================================
+   3.6 STORE (localStorage) – wird vor der Plan-Normalisierung geladen,
+   weil das automatische Startdatum dort gespeichert wird.
+   ======================================================================= */
+const STORAGE_KEY = `training-dashboard:${PLAN_CONFIG.storageKey}`;
+
+function freshState() {
+  return {
+    version: 1,
+    days: {},        // { [dayId]: { completed, completedAt } }
+    exercises: {},   // { [exId]:  { done, setsDone } }
+    settings: { sound: true, weights: {} },   // weights: { [Übungsname]: { weight, bodyweight } }
+    meta: {}
+  };
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return freshState();
+    const s = JSON.parse(raw);
+    const base = freshState();
+    return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) }, meta: s.meta || {} };
+  } catch (err) {
+    console.warn('Gespeicherte Daten konnten nicht gelesen werden.', err);
+    return freshState();
+  }
+}
+let saveTimeout, skipSave = false;
+function save() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveNow, 200); }
+function saveNow() {
+  clearTimeout(saveTimeout);
+  if (skipSave) return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (err) { console.warn('Speichern fehlgeschlagen.', err); }
+}
+window.addEventListener('pagehide', saveNow);
+
+let state = loadState();
+const ensureDay = id => (state.days[id] ||= {});
+const ensureEx  = id => (state.exercises[id] ||= {});
+
+
+/* =======================================================================
+   3.5 PLAN-NORMALISIERUNG
+   Ergänzt jeden Tag/jede Übung um stabile IDs und ein Kalenderdatum.
+   ======================================================================= */
+const TODAY = PLAN_CONFIG.debugToday ? parseISO(PLAN_CONFIG.debugToday) : startOfDay(new Date());
+
+const PLAN_START = (() => {
+  if (PLAN_CONFIG.startDate && PLAN_CONFIG.startDate !== 'auto') return mondayOf(parseISO(PLAN_CONFIG.startDate));
+  if (!state.meta.autoStart) { state.meta.autoStart = toISO(addDays(mondayOf(TODAY), -14)); saveNow(); }
+  return parseISO(state.meta.autoStart);
+})();
+
+const DAY_BY_ID = {};
+const EX_BY_ID = {};
+
+const PLAN = trainingPlan.map((week, wi) => {
+  const days = (week.days || []).map((d, di) => {
+    const named = WEEKDAYS.findIndex(n => n.toLowerCase() === String(d.day || '').toLowerCase());
+    const offset = named >= 0 ? named : di;
+    const id = `w${wi + 1}-d${offset + 1}`;
+    const type = TYPE_META[d.type] ? d.type : 'training';
+    const day = {
+      ...d, id, type, weekIndex: wi, offset,
+      day: WEEKDAYS[offset] || d.day,
+      name: d.name || TYPE_META[type].label,
+      date: addDays(PLAN_START, wi * 7 + offset),
+      exercises: []
+    };
+    day.exercises = (d.exercises || []).map((e, ei) => {
+      const ex = { rest: 90, rpe: null, weight: 0, notes: '', ...e, id: `${id}-e${ei + 1}`, dayId: id, index: ei };
+      ex.planWeight = ex.weight;
+      EX_BY_ID[ex.id] = ex;
+      return ex;
+    });
+    DAY_BY_ID[id] = day;
+    return day;
+  }).sort((a, b) => a.offset - b.offset);
+  return { ...week, index: wi, days };
+});
+
+const ALL_DAYS = PLAN.flatMap(w => w.days).sort((a, b) => a.date - b.date);
+const PLAN_BEGIN = ALL_DAYS[0]?.date || PLAN_START;   // erster tatsächlicher Plantag
+const PLAN_END = PLAN.length ? addDays(PLAN_START, PLAN.length * 7 - 1) : PLAN_START;
+const EXERCISE_NAMES = [...new Set(Object.values(EX_BY_ID).map(e => e.name))];
+
+/* ---------- Gewichts-Einstellungen ----------
+   Ein eigenes Startgewicht skaliert alle Wochen anteilig (Plan-Progression bleibt erhalten).
+   Ist eine Übung im Plan ohne Gewicht, gilt der eingetragene Wert als festes Zusatzgewicht. */
+const REF_WEIGHT = {};   // erstes geplantes Gewicht > 0 je Übung
+ALL_DAYS.forEach(d => d.exercises.forEach(ex => { if (ex.planWeight > 0 && !REF_WEIGHT[ex.name]) REF_WEIGHT[ex.name] = ex.planWeight; }));
+
+const WEIGHT_EXERCISES = (() => {
+  const seen = new Map();
+  ALL_DAYS.filter(d => d.type === 'training' || d.type === 'optional').forEach(d => d.exercises.forEach(ex => {
+    if (!/^(sek|min)/i.test(ex.unit || '') && !seen.has(ex.name)) seen.set(ex.name, d.name);
+  }));
+  return [...seen].map(([name, group]) => ({ name, group, ref: REF_WEIGHT[name] || 0 }));
+})();
+
+const roundWeight = w => { const step = w >= 40 ? 2.5 : w >= 10 ? 1 : 0.5; return Math.round(w / step) * step; };
+const weightCfg = name => (state.settings.weights ||= {})[name];
+
+function applyWeightSettings() {
+  Object.values(EX_BY_ID).forEach(ex => {
+    const c = weightCfg(ex.name), ref = REF_WEIGHT[ex.name];
+    if (!c) ex.weight = ex.planWeight;
+    else if (c.bodyweight) ex.weight = 0;
+    else if (c.weight > 0) ex.weight = ref && ex.planWeight ? roundWeight(ex.planWeight * c.weight / ref) : c.weight;
+    else ex.weight = ex.planWeight;
+  });
+}
+applyWeightSettings();
+
+
+/* =======================================================================
+   3.7 SELEKTOREN & STATISTIKEN
+   ======================================================================= */
+const isWorkout = d => d.type === 'training' || d.type === 'optional';
+const isCompletable = d => d.type !== 'rest';
+const isDayDone = d => !!state.days[d.id]?.completed;
+const isExDone = ex => !!state.exercises[ex.id]?.done;
+
+const setsDone = ex => isExDone(ex) ? ex.sets : Math.min(state.exercises[ex.id]?.setsDone || 0, ex.sets);
+const unitKind = ex => /^sek/i.test(ex.unit || '') ? 'sek' : /^min/i.test(ex.unit || '') ? 'min' : 'wdh';
+const isTimed = ex => unitKind(ex) !== 'wdh';
+const isCardio = ex => unitKind(ex) === 'min';
+const repsUnit = ex => ({ sek: 's', min: ' Min', wdh: '' })[unitKind(ex)];
+
+function exStatus(ex) {
+  if (isExDone(ex)) return { label: 'Erledigt', cls: 's-done' };
+  const s = state.exercises[ex.id];
+  if (s && (s.setsDone > 0)) return { label: 'In Arbeit', cls: 's-progress' };
+  return { label: 'Offen', cls: 's-open' };
+}
+function exTarget(ex) {
+  return [`${ex.sets} × ${ex.reps}${repsUnit(ex)}`, isCardio(ex) ? null : fmtWeight(ex.weight), ex.rest > 0 ? `${ex.rest}s Pause` : null, ex.rpe ? `RPE ${num(ex.rpe)}` : null].filter(Boolean).join(' · ');
+}
+
+const totalSets = d => d.exercises.reduce((s, ex) => s + ex.sets, 0);
+const doneSets = d => d.exercises.reduce((s, ex) => s + setsDone(ex), 0);
+
+function dayProgress(d) {
+  if (isDayDone(d)) return 1;
+  if (!d.exercises.length) return 0;
+  const total = d.exercises.reduce((s, ex) => s + ex.sets, 0);
+  return d.exercises.reduce((s, ex) => s + setsDone(ex), 0) / total;
+}
+function dayStatus(d) {
+  if (d.type === 'rest') return 'rest';
+  if (isDayDone(d)) return 'done';
+  const c = cmpDay(d.date, TODAY);
+  if (c === 0) return 'today';
+  if (c < 0) return d.type === 'training' ? 'missed' : 'skipped';
+  return 'upcoming';
+}
+
+const planNotStarted = () => cmpDay(TODAY, PLAN_BEGIN) < 0;
+const planEnded = () => cmpDay(TODAY, PLAN_END) > 0;
+const currentWeekIndex = () => PLAN.length ? clamp(Math.floor(diffDays(PLAN_START, TODAY) / 7), 0, PLAN.length - 1) : 0;
+const todayDay = () => ALL_DAYS.find(d => cmpDay(d.date, TODAY) === 0) || null;
+const nextWorkout = () => ALL_DAYS.find(d => isWorkout(d) && cmpDay(d.date, TODAY) > 0 && !isDayDone(d)) || null;
+
+function weekStats(w) {
+  const training = w.days.filter(d => d.type === 'training');
+  const workouts = w.days.filter(isWorkout);
+  const done = training.filter(isDayDone).length;
+  return {
+    training: training.length,
+    done,
+    workouts: workouts.length,
+    workoutsDone: workouts.filter(isDayDone).length,
+    progress: training.length ? done / training.length : 0,
+    sets: w.days.reduce((s, d) => s + doneSets(d), 0),
+    plannedSets: w.days.filter(isWorkout).reduce((s, d) => s + totalSets(d), 0)
+  };
+}
+
+function globalStats() {
+  const training = ALL_DAYS.filter(d => d.type === 'training');
+  const workouts = ALL_DAYS.filter(isWorkout);
+  const doneTraining = training.filter(isDayDone).length;
+  // "fällig" = vergangene Trainings + heute, falls bereits erledigt
+  const due = training.filter(d => cmpDay(d.date, TODAY) < 0 || (cmpDay(d.date, TODAY) === 0 && isDayDone(d)));
+  const dueDone = due.filter(isDayDone).length;
+
+  // Streak: aufeinanderfolgende erledigte Workouts; verpasste Pflicht-Trainings brechen die Serie,
+  // ausgelassene optionale Einheiten und das heutige (noch offene) Training nicht.
+  let streak = 0, best = 0;
+  for (const d of workouts) {
+    if (cmpDay(d.date, TODAY) > 0) break;
+    if (isDayDone(d)) { streak++; best = Math.max(best, streak); }
+    else if (d.type === 'training' && cmpDay(d.date, TODAY) < 0) streak = 0;
+  }
+  const lastDue = due[due.length - 1];
+  return {
+    totalTraining: training.length,
+    doneTraining,
+    totalWorkouts: workouts.length,
+    workoutsDone: workouts.filter(isDayDone).length,
+    planProgress: training.length ? doneTraining / training.length : 0,
+    consistency: due.length ? dueDone / due.length : null,
+    dueCount: due.length,
+    missed: due.length - dueDone,
+    lastMissed: lastDue ? !isDayDone(lastDue) : false,
+    streak, best,
+    sets: ALL_DAYS.reduce((s, d) => s + doneSets(d), 0)
+  };
+}
+
+function motivation(g) {
+  const t = todayDay();
+  const quotes = [
+    'Disziplin schlägt Motivation – an jedem einzelnen Tag.',
+    'Stärke entsteht nicht im Training, sondern in der Erholung danach.',
+    'Kleine Fortschritte, konsequent wiederholt, ergeben große Ergebnisse.',
+    'Du musst nicht perfekt sein. Nur beständig.',
+    'Jeder Satz zählt. Jede Wiederholung ist eine Investition.',
+    'Der schwerste Satz ist der, den du gerade nicht machen willst.',
+    'Fortschritt ist leise. Bleib dran, er wird laut.'
+  ];
+  const quote = quotes[Math.abs(diffDays(PLAN_START, TODAY)) % quotes.length];
+  if (!PLAN.length) return { title: 'Kein Plan geladen', text: 'Füge deinen Trainingsplan im Code ein.', tone: 'info', quote };
+  if (planNotStarted()) return { title: 'Bereit für den Start', text: `Dein Plan startet am ${fmtDate(PLAN_BEGIN, { day: 'numeric', month: 'long' })}. Nimm dir Zeit, dich in Ruhe darauf einzustellen!`, tone: 'info', quote };
+  if (planEnded()) return { title: 'Plan abgeschlossen', text: `Du hast ${pct(g.planProgress)} % des Plans absolviert. Zeit für neue Ziele!`, tone: 'success', quote };
+  if (t && isWorkout(t) && isDayDone(t)) return { title: 'Heute erledigt', text: 'Starke Leistung! Das heutige Training ist abgehakt. Jetzt zählen Schlaf und Ernährung.', tone: 'success', quote };
+  if (g.streak >= 5) return { title: `${g.streak} Workouts in Folge`, text: 'Du bist voll im Flow. Genau diese Beständigkeit macht den Unterschied.', tone: 'success', quote };
+  if (g.lastMissed) return { title: 'Zurück in den Rhythmus', text: 'Ein verpasstes Training ist kein Rückschritt. Entscheidend ist das nächste.', tone: 'warning', quote };
+  if (g.consistency !== null && g.consistency >= 0.85) return { title: 'Top-Konsistenz', text: `Du hast ${pct(g.consistency)} % deiner geplanten Trainings absolviert. Weiter so!`, tone: 'success', quote };
+  if (t && isWorkout(t)) return { title: 'Heute zählt', text: `${t.name} steht an. Starte mit vollem Fokus.`, tone: 'info', quote };
+  return { title: 'Erholung ist Training', text: 'Regeneration ist der Moment, in dem du stärker wirst.', tone: 'info', quote };
+}
+
+
+/* =======================================================================
+   DEMO-HISTORIE (nur beim ersten Start, wenn seedDemoProgress = true)
+   ======================================================================= */
+function seedDemoProgress() {
+  const rnd = mulberry32(7);
+  ALL_DAYS.filter(d => cmpDay(d.date, TODAY) < 0 && isCompletable(d)).forEach(d => {
+    const chance = { training: 0.88, optional: 0.5, recovery: 0.7 }[d.type] ?? 0;
+    if (rnd() > chance) return;
+    state.days[d.id] = { completed: true, completedAt: new Date(d.date.getTime() + 18 * 36e5).toISOString() };
+    d.exercises.forEach(ex => { state.exercises[ex.id] = { done: true, setsDone: ex.sets }; });
+  });
+  state.meta.seeded = true;
+  saveNow();
+}
+
+
+/* =======================================================================
+   3.8 UI-KOMPONENTEN
+   ======================================================================= */
+let ANIM = true;   // false = In-Place-Update ohne Eingangsanimationen
+
+function ring(value, { size = 120, stroke = 10, grad = 'gradPrimary', label = '', sub = '', fontSize } = {}) {
+  const r = (size - stroke) / 2, c = 2 * Math.PI * r, v = clamp(value || 0, 0, 1);
+  const offset = ANIM ? c : c * (1 - v);
+  return `<div class="ring" style="width:${size}px;height:${size}px;font-size:${fontSize || size / 7.5}px">
+    <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
+      <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}"/>
+      <circle class="ring-fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke="url(#${grad})"
+        stroke-dasharray="${c}" stroke-dashoffset="${offset}" data-ring="${v}" data-c="${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
+    </svg>
+    <div class="ring-label"><strong>${label}</strong>${sub ? `<span>${sub}</span>` : ''}</div>
+  </div>`;
+}
+function animateRings(root) {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    $$('[data-ring]', root).forEach(el => { el.style.strokeDashoffset = (+el.dataset.c) * (1 - (+el.dataset.ring)); });
+  }));
+}
+function animateCounts(root) {
+  $$('[data-count]', root).forEach(el => {
+    const target = +el.dataset.count, dec = +(el.dataset.dec || 0), suffix = el.dataset.suffix || '';
+    const t0 = performance.now(), dur = 1000;
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = num(target * e, dec) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+const count = (value, dec = 0, suffix = '') => `<span data-count="${value}" data-dec="${dec}" data-suffix="${suffix}">${num(value, dec)}${suffix}</span>`;
+const bar = (value, cls = '') => `<div class="bar ${cls}"><span style="--w:${pct(value)}%"></span></div>`;
+const statusBadge = st => `<span class="badge s-${st}">${STATUS_META[st].icon ? icon(STATUS_META[st].icon) : ''}${STATUS_META[st].label}</span>`;
+
+function emptyState(iconName, title, text, actions = '') {
+  return `<div class="card span-12"><div class="empty"><div class="empty-icon">${icon(iconName)}</div><h3>${title}</h3><p>${text}</p>${actions ? `<div class="actions">${actions}</div>` : ''}</div></div>`;
+}
+
+/* ---------- Charts (reines SVG) ---------- */
+function barChart(items, { height = 220, fmt = v => num(v) } = {}) {
+  const W = 640, H = height, pt = 26, pb = 30, px = 6;
+  const n = Math.max(1, items.length), slot = (W - px * 2) / n, bw = Math.min(34, slot * 0.56), ih = H - pt - pb;
+  const max = Math.max(1, ...items.map(i => Math.max(i.value, i.max || 0)));
+  let s = '';
+  for (let g = 0; g <= 3; g++) { const y = pt + ih * g / 3; s += `<line class="grid-line" x1="${px}" x2="${W - px}" y1="${y}" y2="${y}"/>`; }
+  items.forEach((it, i) => {
+    const cx = px + slot * i + slot / 2, x = cx - bw / 2;
+    if (it.max) { const h = ih * it.max / max; s += `<rect class="bar-bg" x="${x}" y="${pt + ih - h}" width="${bw}" height="${h}" rx="${Math.min(8, h / 2)}"/>`; }
+    const h = ih * it.value / max;
+    if (h > 0) s += `<rect class="bar-fg" x="${x}" y="${pt + ih - h}" width="${bw}" height="${h}" rx="${Math.min(8, h / 2)}" fill="url(#${it.grad || 'gradPrimaryV'})" style="animation-delay:${i * 50}ms"><title>${esc(it.label)}: ${fmt(it.value)}${it.max ? ' / ' + fmt(it.max) : ''}</title></rect>`;
+    if (it.value > 0) s += `<text class="bar-val" x="${cx}" y="${pt + ih - h - 8}">${fmt(it.value)}</text>`;
+    s += `<text class="axis-label ${it.highlight ? 'hl' : ''}" x="${cx}" y="${H - 8}">${esc(it.label)}</text>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${s}</svg>`;
+}
+
+function lineChart(labels, series, { height = 240, fmt = v => num(v), zero = false, highlight = -1 } = {}) {
+  const vals = series.flatMap(s => s.values).filter(v => v !== null && v !== undefined);
+  if (!vals.length) return `<div class="chart-empty">${icon('chart')}<span>Noch keine Daten – absolviere ein Workout, um die Entwicklung zu sehen.</span></div>`;
+  const W = 640, H = height, pt = 20, pb = 30, pl = 48, pr = 14, iw = W - pl - pr, ih = H - pt - pb, n = labels.length;
+  let min = zero ? 0 : Math.min(...vals), max = Math.max(...vals);
+  if (min === max) { max += 1; min = Math.max(0, min - 1); }
+  const padV = (max - min) * 0.15;
+  if (!zero) min = Math.max(0, min - padV);
+  max += padV;
+  const X = i => pl + (n === 1 ? iw / 2 : iw * i / (n - 1));
+  const Y = v => pt + ih - ih * (v - min) / (max - min);
+  let s = '';
+  for (let g = 0; g <= 4; g++) {
+    const v = min + (max - min) * (4 - g) / 4, y = pt + ih * g / 4;
+    s += `<line class="grid-line" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text class="axis-y" x="${pl - 8}" y="${y + 4}">${fmt(v)}</text>`;
+  }
+  labels.forEach((l, i) => { s += `<text class="axis-label ${i === highlight ? 'hl' : ''}" x="${X(i)}" y="${H - 8}">${esc(l)}</text>`; });
+  series.forEach(se => {
+    // In zusammenhängende Segmente aufteilen (null = Lücke)
+    const segs = []; let cur = [];
+    se.values.forEach((v, i) => { if (v === null || v === undefined) { if (cur.length) segs.push(cur); cur = []; } else cur.push([X(i), Y(v), v, i]); });
+    if (cur.length) segs.push(cur);
+    segs.forEach(seg => {
+      const d = seg.map((p, k) => `${k ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      if (se.area && seg.length > 1) s += `<path class="line-area" d="${d} L${seg[seg.length - 1][0]},${pt + ih} L${seg[0][0]},${pt + ih} Z" fill="url(#${se.area})"/>`;
+      s += se.dashed
+        ? `<path class="line-dashed" d="${d}" stroke="${se.color}"/>`
+        : `<path class="line-path" d="${d}" stroke="${se.color}" pathLength="1"/>`;
+      if (!se.dashed) seg.forEach(p => { s += `<circle class="line-dot" cx="${p[0]}" cy="${p[1]}" r="5" fill="${se.color}"><title>${esc(labels[p[3]])} · ${esc(se.name)}: ${fmt(p[2])}</title></circle>`; });
+    });
+  });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${s}</svg>`;
+}
+
+function heatmap() {
+  let h = `<div class="heatmap" style="--cols:${PLAN.length}"><span></span>${PLAN.map((_, i) => `<span class="hm-head">W${i + 1}</span>`).join('')}`;
+  for (let r = 0; r < 7; r++) {
+    h += `<span class="hm-row">${WD_SHORT[r]}</span>`;
+    PLAN.forEach(w => {
+      const d = w.days.find(x => x.offset === r);
+      if (!d) { h += '<span class="hm-cell" disabled></span>'; return; }
+      const st = dayStatus(d);
+      h += `<button class="hm-cell hm-${st} t-${d.type}" data-action="open-day" data-day="${d.id}" title="${esc(`${fmtDate(d.date, { weekday: 'short', day: '2-digit', month: '2-digit' })} · ${d.name} · ${STATUS_META[st].label}`)}" aria-label="${esc(d.name)}"></button>`;
+    });
+  }
+  return h + `</div>
+  <div class="hm-legend">
+    <span><i style="background:var(--success)"></i>Training erledigt</span>
+    <span><i style="background:#ff9a4c"></i>Optional erledigt</span>
+    <span><i style="background:rgba(54,214,195,.55)"></i>Regeneration</span>
+    <span><i style="background:rgba(255,92,122,.5)"></i>Verpasst</span>
+    <span><i style="background:rgba(124,108,255,.14)"></i>Geplant</span>
+  </div>`;
+}
+
+/* ---------- Toasts & Konfetti ---------- */
+function toast(msg, type = 'info', iconName = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<div class="toast-icon">${icon(iconName)}</div><div>${esc(msg)}</div>`;
+  $('#toasts').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, 3200);
+}
+
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = $('#confetti'), ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.scale(dpr, dpr);
+  const colors = ['#7c6cff', '#3ec9ff', '#2fe39a', '#c8ff4d', '#ffb547', '#ff4d8d'];
+  const parts = Array.from({ length: 160 }, () => ({
+    x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * 0.35,
+    vx: (Math.random() - .5) * 16, vy: -Math.random() * 14 - 4,
+    s: Math.random() * 7 + 4, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+    c: colors[Math.floor(Math.random() * colors.length)]
+  }));
+  const t0 = performance.now();
+  (function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    parts.forEach(p => {
+      p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - t / 2200); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+    });
+    if (t < 2200) requestAnimationFrame(frame); else ctx.clearRect(0, 0, innerWidth, innerHeight);
+  })(t0);
+}
+
+
+/* =======================================================================
+   3.9 VIEWS
+   ======================================================================= */
+const ROUTES = {
+  dashboard: { title: 'Übersicht',     icon: 'home',     short: 'Start',   render: viewDashboard },
+  today:     { title: 'Heute',         icon: 'zap',      short: 'Heute',   render: viewToday },
+  plan:      { title: 'Trainingsplan', icon: 'calendar', short: 'Plan',    render: viewPlan },
+  progress:  { title: 'Fortschritt',   icon: 'chart',    short: 'Stats',   render: viewProgress },
+  timer:     { title: 'Pausentimer',   icon: 'timer',    short: 'Timer',   render: viewTimer },
+  settings:  { title: 'Einstellungen', icon: 'sliders',  short: 'Setup',   render: viewSettings }
+};
+
+const ui = {
+  route: 'dashboard',
+  selectedWeek: currentWeekIndex(),
+  progressExercise: EXERCISE_NAMES.includes('Goblet Squat') ? 'Goblet Squat' : EXERCISE_NAMES[0],
+  modalDayId: null,
+  focus: null,          // { dayId, exIndex, startedAt, finished }
+  lastToggled: null     // für Check-"Pop"-Animation
+};
+
+/* ---------- Übersicht ---------- */
+function viewDashboard() {
+  if (!PLAN.length) return `<div class="grid">${emptyState('calendar', 'Noch kein Trainingsplan', 'Füge deinen Plan im Bereich „TRAININGSPLAN HIER EINFÜGEN“ ein.')}</div>`;
+  const g = globalStats();
+  const wi = currentWeekIndex(), w = PLAN[wi], ws = weekStats(w);
+  const t = todayDay(), next = nextWorkout(), m = motivation(g);
+
+  return `<div class="grid">
+    ${heroToday(t, w, wi)}
+
+    <section class="card span-4 ring-card lift">
+      <div class="eyebrow">Gesamtfortschritt</div>
+      ${ring(g.planProgress, { size: 170, stroke: 14, label: `${count(pct(g.planProgress))}%`, sub: 'des Plans' })}
+      <p>${g.doneTraining} von ${g.totalTraining} Trainingseinheiten absolviert</p>
+    </section>
+
+    <section class="card stat span-3 lift">
+      <div class="stat-icon">${icon('dumbbell')}</div>
+      <div class="stat-label">Absolvierte Workouts</div>
+      <div class="stat-value">${count(g.workoutsDone)}<small>/ ${g.totalWorkouts}</small></div>
+      <div class="stat-foot"><span class="up">+${ws.workoutsDone}</span> diese Woche</div>
+    </section>
+    <section class="card stat span-3 lift">
+      <div class="stat-icon warm">${icon('flame')}</div>
+      <div class="stat-label">Trainingsserie</div>
+      <div class="stat-value">${count(g.streak)}<small>${g.streak === 1 ? 'Workout' : 'Workouts'}</small></div>
+      <div class="stat-foot">Beste Serie: <strong>${g.best}</strong></div>
+    </section>
+    <section class="card stat span-3 lift">
+      <div class="stat-icon green">${icon('target')}</div>
+      <div class="stat-label">Konsistenz</div>
+      <div class="stat-value">${g.consistency === null ? '–' : count(pct(g.consistency), 0, '%')}</div>
+      <div class="stat-foot">${g.dueCount ? `${g.dueCount - g.missed} von ${g.dueCount} fälligen Trainings` : 'Noch keine fälligen Trainings'}</div>
+    </section>
+    <section class="card stat span-3 lift">
+      <div class="stat-icon cyan">${icon('layers')}</div>
+      <div class="stat-label">Sätze diese Woche</div>
+      <div class="stat-value">${count(ws.sets)}<small>/ ${ws.plannedSets}</small></div>
+      <div class="stat-foot">Gesamt: ${num(g.sets, 0)} Sätze</div>
+    </section>
+
+    <section class="card span-8">
+      <div class="card-head">
+        <div>
+          <div class="card-title">${icon('calendar')} Woche ${wi + 1} · ${esc(w.title || '')}</div>
+          <div class="card-sub">${fmtDate(w.days[0]?.date || PLAN_START)} – ${fmtDate(addDays(PLAN_START, wi * 7 + 6))}${w.phase ? ` · Phase: ${esc(w.phase)}` : ''}</div>
+        </div>
+        <button class="btn btn-ghost" data-action="goto-week" data-week="${wi}">Woche öffnen ${icon('right', 'i-sm')}</button>
+      </div>
+      <div class="week-strip">${w.days.map(d => weekStripDay(d)).join('')}</div>
+      <div class="progress-line" style="margin-top:20px">
+        <span>Wochenfortschritt</span>${bar(ws.progress, 'success')}<strong>${pct(ws.progress)}%</strong>
+      </div>
+    </section>
+
+    <section class="card span-4 lift">
+      <div class="card-head"><div class="card-title">${icon('flag')} Nächstes Training</div></div>
+      ${next ? `
+        <span class="next-when">${icon('clock', 'i-sm')} ${relDay(next.date)} · ${fmtDate(next.date, { weekday: 'short', day: '2-digit', month: '2-digit' })}</span>
+        <div class="next-title">${esc(next.name)}</div>
+        <div class="card-sub">${esc(next.focus || '')}</div>
+        <ul class="mini-list">
+          ${next.exercises.slice(0, 3).map(ex => `<li><span>${esc(ex.name)}</span><span>${ex.sets}×${ex.reps}${repsUnit(ex)}${ex.weight ? ' · ' + num(ex.weight, 2) + ' kg' : ''}</span></li>`).join('')}
+          ${next.exercises.length > 3 ? `<li><span class="muted">+ ${next.exercises.length - 3} weitere Übungen</span><span></span></li>` : ''}
+        </ul>
+        <button class="btn btn-ghost btn-block" data-action="open-day" data-day="${next.id}">Details ansehen</button>`
+      : `<div class="empty" style="padding:20px 0"><div class="empty-icon">${icon('trophy')}</div><h3>Alles geschafft</h3><p>Keine weiteren Workouts im Plan.</p></div>`}
+    </section>
+
+    <section class="card span-6">
+      <div class="card-head">
+        <div><div class="card-title">${icon('chart')} Workouts pro Woche</div><div class="card-sub">Erledigte Pflicht-Trainings vs. geplant</div></div>
+        <button class="btn btn-ghost" data-route="progress">Fortschritt ${icon('right', 'i-sm')}</button>
+      </div>
+      ${barChart(PLAN.map((wk, i) => { const s = weekStats(wk); return { label: `W${i + 1}`, value: s.done, max: s.training, highlight: i === wi }; }), { height: 200 })}
+    </section>
+
+    <section class="card span-6 motivation tone-${m.tone}">
+      <div class="card-head"><div class="card-title">${icon(m.tone === 'success' ? 'award' : m.tone === 'warning' ? 'activity' : 'sparkles')} ${esc(m.title)}</div></div>
+      <blockquote>„${esc(m.quote)}“</blockquote>
+      <p class="text-2" style="margin-top:14px">${esc(m.text)}</p>
+      <div class="status-row">
+        ${w.phase ? `<span class="badge s-today">${icon('layers')}Phase: ${esc(w.phase)}</span>` : ''}
+        <span class="badge ${g.consistency === null || g.consistency >= 0.85 ? 's-done' : g.consistency >= 0.65 ? 's-progress' : 's-missed'}">${icon('target')}${g.consistency === null ? 'Plan startet' : g.consistency >= 0.85 ? 'Voll im Plan' : g.consistency >= 0.65 ? 'Im Plan' : 'Hinter Plan'}</span>
+        <span class="badge s-upcoming">${icon('calendar')}${PLAN.length} Wochen Plan</span>
+        ${g.missed ? `<span class="badge s-missed">${g.missed} verpasst</span>` : ''}
+      </div>
+    </section>
+  </div>`;
+}
+
+function heroToday(t, w, wi) {
+  const weekInfo = `Woche ${wi + 1} von ${PLAN.length}${w.phase ? ' · ' + esc(w.phase) : ''}`;
+  if (planNotStarted() || planEnded() || !t) {
+    const ended = planEnded();
+    return `<section class="card hero span-8">
+      <div class="hero-content">
+        <div class="eyebrow">${ended ? 'Plan beendet' : 'Bald geht’s los'}</div>
+        <h2>${ended ? 'Plan erfolgreich abgeschlossen' : 'Dein Plan startet bald'}</h2>
+        <p class="lead">${ended ? 'Schau dir deinen Fortschritt an.' : `Start am ${fmtLong(PLAN_BEGIN)}.`}</p>
+        <div class="actions"><button class="btn btn-primary" data-route="${ended ? 'progress' : 'plan'}">${ended ? 'Fortschritt ansehen' : 'Plan ansehen'} ${icon('right', 'i-sm')}</button></div>
+      </div>
+      <div class="hero-side">${ring(ended ? 1 : 0, { size: 150, stroke: 12, grad: 'gradSuccess', label: ended ? icon('check', 'i-lg') : icon('calendar', 'i-lg') })}</div>
+    </section>`;
+  }
+  const done = isDayDone(t), prog = dayProgress(t);
+  if (!isWorkout(t)) {
+    return `<section class="card hero recovery span-8 ${done ? 'done' : ''}">
+      <div class="hero-content">
+        <div class="eyebrow">${weekInfo} · Heute</div>
+        <h2>${esc(t.type === 'rest' ? 'Ruhetag' : t.name)}</h2>
+        <p class="lead">${esc(t.description || 'Heute steht Erholung im Vordergrund.')}</p>
+        <div class="chips"><span class="chip">${icon(TYPE_META[t.type].icon)}${TYPE_META[t.type].label}</span>${t.duration ? `<span class="chip">${icon('clock')}${t.duration} min</span>` : ''}</div>
+        <div class="actions">
+          ${t.type === 'recovery' ? `<button class="btn ${done ? 'btn-ghost' : 'btn-success'}" data-action="toggle-day" data-day="${t.id}">${icon('check', 'i-sm')} ${done ? 'Erledigt – rückgängig' : 'Als erledigt markieren'}</button>` : ''}
+          <button class="btn btn-ghost" data-route="today">Tagesansicht</button>
+        </div>
+      </div>
+      <div class="hero-side">${ring(done ? 1 : 0, { size: 150, stroke: 12, grad: 'gradRecovery', label: icon(TYPE_META[t.type].icon, 'i-lg') })}</div>
+    </section>`;
+  }
+  const totalSets = t.exercises.reduce((s, ex) => s + ex.sets, 0);
+  return `<section class="card hero span-8 ${done ? 'done' : ''}">
+    <div class="hero-content">
+      <div class="eyebrow">${weekInfo} · Heutiges Training</div>
+      <h2>${esc(t.name)}</h2>
+      ${t.focus ? `<p class="lead">${esc(t.focus)}</p>` : ''}
+      <div class="chips">
+        <span class="chip">${icon('list')}${plural(t.exercises.length, 'Übung', 'Übungen')}</span>
+        <span class="chip">${icon('layers')}${totalSets} Sätze</span>
+        ${t.duration ? `<span class="chip">${icon('clock')}~${t.duration} min</span>` : ''}
+        ${done ? `<span class="chip" style="color:var(--success)">${icon('check')}Erledigt</span>` : ''}
+      </div>
+      <div class="actions">
+        ${done
+          ? `<button class="btn btn-ghost" data-action="open-day" data-day="${t.id}">${icon('list', 'i-sm')} Ergebnisse ansehen</button>`
+          : `<button class="btn btn-primary btn-lg" data-action="start-workout" data-day="${t.id}">${icon('play', 'i-sm')} ${prog > 0 ? 'Training fortsetzen' : 'Training starten'}</button>
+             <button class="btn btn-ghost btn-lg" data-action="open-day" data-day="${t.id}">Details</button>`}
+      </div>
+    </div>
+    <div class="hero-side">${ring(prog, { size: 170, stroke: 14, grad: done ? 'gradSuccess' : 'gradPrimary', label: `${pct(prog)}%`, sub: 'heute' })}</div>
+  </section>`;
+}
+
+function weekStripDay(d) {
+  const st = dayStatus(d);
+  const ic = st === 'done' ? 'check' : st === 'missed' ? 'x' : TYPE_META[d.type].icon;
+  return `<button class="ws-day ${st} t-${d.type}" data-action="open-day" data-day="${d.id}" title="${esc(d.name)} · ${STATUS_META[st].label}">
+    <span class="ws-name">${WD_SHORT[d.offset]}</span>
+    <span class="ws-num">${d.date.getDate()}</span>
+    <span class="ws-dot">${icon(ic)}</span>
+    <span class="ws-label">${esc(isWorkout(d) ? d.name.split('–')[0].trim() : TYPE_META[d.type].label)}</span>
+  </button>`;
+}
+
+/* ---------- Heute ---------- */
+function viewToday() {
+  if (!PLAN.length) return `<div class="grid">${emptyState('calendar', 'Kein Plan vorhanden', 'Füge deinen Trainingsplan im Code ein.')}</div>`;
+  const t = todayDay();
+  if (!t) {
+    const ended = planEnded();
+    return `<div class="grid">${emptyState(ended ? 'trophy' : 'calendar',
+      ended ? 'Dein Plan ist abgeschlossen' : 'Heute ist kein Training geplant',
+      ended ? 'Glückwunsch! Sieh dir deine Statistiken an.' : `Dein Plan startet am ${fmtLong(PLAN_BEGIN)}.`,
+      `<button class="btn btn-primary" data-route="${ended ? 'progress' : 'plan'}">${ended ? 'Fortschritt ansehen' : 'Plan ansehen'}</button>`)}</div>`;
+  }
+  const next = nextWorkout();
+  const nextCard = `<section class="card span-4">
+      <div class="card-head"><div class="card-title">${icon('flag')} Als Nächstes</div></div>
+      ${next ? `<span class="next-when">${icon('clock', 'i-sm')} ${relDay(next.date)}</span><div class="next-title">${esc(next.name)}</div><p class="card-sub">${esc(next.focus || '')}</p>
+        <button class="btn btn-ghost btn-block" style="margin-top:16px" data-action="open-day" data-day="${next.id}">Vorschau</button>`
+      : '<p class="muted">Keine weiteren Workouts geplant.</p>'}
+    </section>`;
+
+  if (!isWorkout(t)) {
+    const done = isDayDone(t);
+    return `<div class="grid">
+      <section class="card span-8">
+        <div class="empty">
+          <div class="empty-icon" style="background:rgba(54,214,195,.12);color:var(--recovery)">${icon(TYPE_META[t.type].icon)}</div>
+          <div class="eyebrow">${fmtLong(t.date)}</div>
+          <h3>${t.type === 'rest' ? 'Heute ist Ruhetag' : esc(t.name)}</h3>
+          <p>${esc(t.description || 'Gönn deinem Körper die Erholung – hier passiert die Anpassung.')}</p>
+          ${t.type === 'recovery' ? `<div class="actions"><button class="btn ${done ? 'btn-ghost' : 'btn-success'}" data-action="toggle-day" data-day="${t.id}">${icon('check', 'i-sm')} ${done ? 'Erledigt – rückgängig' : 'Regeneration erledigt'}</button></div>` : ''}
+        </div>
+      </section>
+      ${nextCard}
+    </div>`;
+  }
+
+  const done = isDayDone(t), prog = dayProgress(t);
+  const doneEx = t.exercises.filter(isExDone).length;
+  return `<div class="grid">
+    <section class="card hero span-12 ${done ? 'done' : ''}">
+      <div class="hero-content">
+        <div class="eyebrow">${fmtLong(t.date)} · Woche ${t.weekIndex + 1}</div>
+        <h2>${esc(t.name)}</h2>
+        ${t.focus ? `<p class="lead">${esc(t.focus)}</p>` : ''}
+        <div class="chips">
+          <span class="chip">${icon('list')}${doneEx}/${t.exercises.length} Übungen</span>
+          ${t.duration ? `<span class="chip">${icon('clock')}~${t.duration} min</span>` : ''}
+          <span class="chip">${icon('layers')}${doneSets(t)}/${totalSets(t)} Sätze</span>
+        </div>
+        <div class="actions">
+          ${done
+            ? `<span class="badge s-done" style="padding:10px 16px;font-size:13px">${icon('check')}Training abgeschlossen</span>
+               <button class="btn btn-ghost" data-action="toggle-day" data-day="${t.id}">Rückgängig</button>`
+            : `<button class="btn btn-primary btn-lg" data-action="start-workout" data-day="${t.id}">${icon('play', 'i-sm')} ${prog > 0 ? 'Training fortsetzen' : 'Training starten'}</button>
+               <button class="btn btn-ghost btn-lg" data-action="toggle-day" data-day="${t.id}">${icon('check', 'i-sm')} Schnell abhaken</button>`}
+        </div>
+      </div>
+      <div class="hero-side">${ring(prog, { size: 180, stroke: 14, grad: done ? 'gradSuccess' : 'gradPrimary', label: `${pct(prog)}%`, sub: 'Fortschritt' })}</div>
+    </section>
+
+    <section class="card span-8">
+      <div class="card-head">
+        <div class="card-title">${icon('list')} Übungen</div>
+        <button class="btn btn-ghost" data-action="open-day" data-day="${t.id}">Bearbeiten</button>
+      </div>
+      <div class="ex-list">
+        ${t.exercises.map(ex => `
+          <div class="ex-row ${isExDone(ex) ? 'is-done' : ''}">
+            <button class="check sm ${isExDone(ex) ? 'checked' : ''} ${ui.lastToggled === ex.id ? 'pop' : ''}" data-action="toggle-ex" data-ex="${ex.id}" aria-label="${esc(ex.name)} abhaken">${icon('check')}</button>
+            <div class="ex-row-main"><strong>${esc(ex.name)}</strong><span>${exTarget(ex)}</span></div>
+            <span class="ex-row-sets">${setsDone(ex)}/${ex.sets}</span>
+          </div>`).join('')}
+      </div>
+    </section>
+
+    <div class="span-4" style="display:flex;flex-direction:column;gap:20px">
+      <section class="card">
+        <div class="card-head"><div class="card-title">${icon('timer')} Pausentimer</div></div>
+        ${timerWidget(200, true)}
+      </section>
+      ${nextCard}
+    </div>
+  </div>`;
+}
+
+/* ---------- Trainingsplan ---------- */
+function viewPlan() {
+  if (!PLAN.length) return `<div class="grid">${emptyState('calendar', 'Noch kein Trainingsplan', 'Füge deinen Plan im Code ein – die Wochen erscheinen dann automatisch hier.')}</div>`;
+  const wi = clamp(ui.selectedWeek, 0, PLAN.length - 1), w = PLAN[wi], ws = weekStats(w), cur = currentWeekIndex();
+  const start = w.days[0]?.date || addDays(PLAN_START, wi * 7), end = addDays(PLAN_START, wi * 7 + 6);
+  return `
+  <div class="week-tabs-wrap">
+    <div class="week-tabs" role="tablist" id="weekTabs">
+      ${PLAN.map((wk, i) => `<button role="tab" aria-selected="${i === wi}" class="week-tab ${i === wi ? 'active' : ''} ${i === cur && !planNotStarted() && !planEnded() ? 'current' : ''}" data-action="select-week" data-week="${i}">
+        <span>Woche ${i + 1}</span><i class="wt-bar"><b style="width:${pct(weekStats(wk).progress)}%"></b></i></button>`).join('')}
+    </div>
+  </div>
+  <div class="grid">
+    <section class="card span-12">
+      <div class="week-head">
+        <div style="display:flex;gap:22px;align-items:center">
+          ${ring(ws.progress, { size: 96, stroke: 9, grad: 'gradSuccess', label: `${pct(ws.progress)}%` })}
+          <div>
+            <div class="eyebrow">Woche ${wi + 1} von ${PLAN.length} · ${fmtDate(start)} – ${fmtDate(end, { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+            <h2>${esc(w.title || `Woche ${wi + 1}`)}</h2>
+            <div class="chips" style="margin-top:8px">
+              ${w.phase ? `<span class="chip">${icon('layers')}${esc(w.phase)}</span>` : ''}
+              ${w.focus ? `<span class="chip">${icon('target')}${esc(w.focus)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="week-kpis">
+          <div class="kpi"><strong>${ws.done}/${ws.training}</strong><span>Trainings</span></div>
+          <div class="kpi"><strong>${ws.workoutsDone - ws.done}</strong><span>Optional erledigt</span></div>
+          <div class="kpi"><strong>${ws.sets}/${ws.plannedSets}</strong><span>Sätze</span></div>
+        </div>
+        <div class="nav-arrows">
+          <button class="icon-btn" data-action="week-step" data-dir="-1" ${wi === 0 ? 'disabled style="opacity:.35"' : ''} aria-label="Vorherige Woche">${icon('left')}</button>
+          <button class="icon-btn" data-action="week-step" data-dir="1" ${wi === PLAN.length - 1 ? 'disabled style="opacity:.35"' : ''} aria-label="Nächste Woche">${icon('right')}</button>
+        </div>
+      </div>
+    </section>
+    <div class="span-12 day-grid">
+      ${w.days.map((d, i) => dayCard(d, i)).join('')}
+    </div>
+  </div>`;
+}
+
+function dayCard(d, i) {
+  const st = dayStatus(d), prog = dayProgress(d), isToday = cmpDay(d.date, TODAY) === 0;
+  const sub = d.focus || d.description || '';
+  return `<button class="day-card t-${d.type} ${st === 'done' ? 's-done-card' : ''} ${isToday ? 'is-today' : ''}" data-action="open-day" data-day="${d.id}" style="--i:${i}">
+    <div class="day-top">
+      <div><span class="day-name">${d.day}</span><span class="day-date">${fmtDate(d.date)}</span></div>
+      ${statusBadge(isToday && st !== 'done' ? 'today' : st)}
+    </div>
+    <div class="day-icon">${icon(TYPE_META[d.type].icon)}</div>
+    <h3>${esc(d.name)}</h3>
+    ${sub ? `<p>${esc(sub)}</p>` : ''}
+    <div class="day-meta">
+      ${d.exercises.length ? `<span>${icon('list')}${d.exercises.length} Übungen</span>` : `<span>${icon(TYPE_META[d.type].icon)}${TYPE_META[d.type].label}</span>`}
+      ${d.duration ? `<span>${icon('clock')}${d.duration} min</span>` : ''}
+    </div>
+    ${d.exercises.length ? bar(prog, `thin ${st === 'done' ? 'success' : ''}`) : ''}
+  </button>`;
+}
+
+/* ---------- Fortschritt ---------- */
+function viewProgress() {
+  if (!PLAN.length) return `<div class="grid">${emptyState('chart', 'Keine Daten', 'Sobald ein Plan hinterlegt ist, erscheinen hier deine Statistiken.')}</div>`;
+  const g = globalStats(), wi = currentWeekIndex(), ws = weekStats(PLAN[wi]);
+  const weeks = PLAN.map(w => weekStats(w));
+  const labels = PLAN.map((_, i) => `W${i + 1}`);
+
+  // Geplante Gewichtsprogression der gewählten Übung pro Woche
+  const weightedNames = EXERCISE_NAMES.filter(n => Object.values(EX_BY_ID).some(e => e.name === n && e.weight > 0));
+  const exName = weightedNames.includes(ui.progressExercise) ? ui.progressExercise : weightedNames[0];
+  const planVals = PLAN.map(w => {
+    const exs = w.days.flatMap(d => d.exercises).filter(e => e.name === exName);
+    return exs.length ? Math.max(...exs.map(e => e.weight || 0)) || null : null;
+  });
+
+  return `<div class="grid">
+    <div class="span-12 rings-row">
+      <section class="card ring-card lift">${ring(g.planProgress, { size: 130, stroke: 11, label: `${count(pct(g.planProgress))}%` })}<div><h3>Planfortschritt</h3><p>${g.doneTraining}/${g.totalTraining} Trainings</p></div></section>
+      <section class="card ring-card lift">${ring(ws.progress, { size: 130, stroke: 11, grad: 'gradSuccess', label: `${count(pct(ws.progress))}%` })}<div><h3>Wochenfortschritt</h3><p>Woche ${wi + 1}: ${ws.done}/${ws.training}</p></div></section>
+      <section class="card ring-card lift">${ring(g.consistency ?? 0, { size: 130, stroke: 11, grad: 'gradRecovery', label: g.consistency === null ? '–' : `${count(pct(g.consistency))}%` })}<div><h3>Konsistenz</h3><p>${g.missed} verpasst</p></div></section>
+      <section class="card ring-card lift">${ring(g.totalWorkouts ? g.workoutsDone / g.totalWorkouts : 0, { size: 130, stroke: 11, grad: 'gradWarm', label: count(g.workoutsDone) })}<div><h3>Workouts</h3><p>inkl. optionaler Einheiten</p></div></section>
+    </div>
+
+    <section class="card span-6">
+      <div class="card-head"><div><div class="card-title">${icon('dumbbell')} Absolvierte Workouts</div><div class="card-sub">Pflicht-Trainings pro Woche</div></div>
+      <div class="chart-legend"><span><i style="background:var(--grad-primary)"></i>Erledigt</span><span><i style="background:rgba(255,255,255,.1)"></i>Geplant</span></div></div>
+      ${barChart(weeks.map((s, i) => ({ label: labels[i], value: s.done, max: s.training, highlight: i === wi })))}
+    </section>
+
+    <section class="card span-6">
+      <div class="card-head"><div><div class="card-title">${icon('layers')} Absolvierte Sätze</div><div class="card-sub">Pro Woche · gesamt ${num(g.sets, 0)} Sätze</div></div>
+      <div class="chart-legend"><span><i style="background:#2fe39a"></i>Ist</span><span><i style="background:#7c6cff;opacity:.6"></i>Plan</span></div></div>
+      ${lineChart(labels, [
+        { name: 'Plan', values: weeks.map(s => s.plannedSets || null), color: '#7c6cff', dashed: true },
+        { name: 'Ist', values: weeks.map((s, i) => (i <= wi || s.sets) ? s.sets : null), color: '#2fe39a', area: 'areaSuccess' }
+      ], { fmt: v => num(v, 0), zero: true, highlight: wi })}
+    </section>
+
+    <section class="card span-8">
+      <div class="card-head">
+        <div><div class="card-title">${icon('trend')} Gewichtsprogression</div><div class="card-sub">Geplantes Arbeitsgewicht pro Woche</div></div>
+        <select class="input" style="width:auto;min-width:210px" id="progressExercise" aria-label="Übung wählen">
+          ${weightedNames.map(n => `<option ${n === exName ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+        </select>
+      </div>
+      ${lineChart(labels, [
+        { name: 'Plan', values: planVals, color: '#3ec9ff', area: 'areaPrimary' }
+      ], { fmt: v => num(v, 1) + ' kg', highlight: wi })}
+    </section>
+
+    <section class="card span-4">
+      <div class="card-head"><div class="card-title">${icon('calendar')} Wochenfortschritt</div></div>
+      <div class="week-bars">
+        ${weeks.map((s, i) => `<div class="week-bar-row ${i === wi ? 'current' : ''}" data-action="goto-week" data-week="${i}" role="button" tabindex="0">
+          <span class="wl">Woche ${i + 1}</span>${bar(s.progress, s.progress >= 1 ? 'success' : '')}<span class="wv">${pct(s.progress)}%</span></div>`).join('')}
+      </div>
+    </section>
+
+    <section class="card span-12">
+      <div class="card-head"><div><div class="card-title">${icon('activity')} Trainingskonsistenz</div><div class="card-sub">Jeder Tag deines Plans auf einen Blick – klicke für Details</div></div>
+      <div class="kpi" style="text-align:right"><strong>${num(g.sets, 0)}</strong><span>Sätze absolviert</span></div></div>
+      ${heatmap()}
+    </section>
+  </div>`;
+}
+
+/* ---------- Timer ---------- */
+function viewTimer() {
+  return `<div class="grid">
+    <section class="card span-7" style="padding:36px 22px">${timerWidget(300)}</section>
+    <section class="card span-5">
+      <div class="card-head"><div class="card-title">${icon('info')} Pausen-Empfehlungen</div></div>
+      <table class="rest-table">
+        <tr><td>Maximalkraft (1–5 Wdh.)</td><td>180–300 s</td></tr>
+        <tr><td>Kraft / Hypertrophie (6–10 Wdh.)</td><td>90–180 s</td></tr>
+        <tr><td>Hypertrophie (10–15 Wdh.)</td><td>60–90 s</td></tr>
+        <tr><td>Kraftausdauer / Isolation</td><td>30–60 s</td></tr>
+      </table>
+      <div class="toggle" style="margin-top:12px">
+        <div><strong>Signalton</strong><div class="card-sub">Akustisches Signal & Vibration bei Ablauf</div></div>
+        <button class="switch ${state.settings.sound ? 'on' : ''}" data-action="toggle-sound" role="switch" aria-checked="${state.settings.sound}" aria-label="Signalton"></button>
+      </div>
+      <p class="card-sub" style="margin-top:8px">Tipp: Im Fokus-Modus startet der Timer nach jedem Satz automatisch mit der geplanten Pause der Übung.</p>
+    </section>
+  </div>`;
+}
+
+
+/* ---------- Einstellungen ---------- */
+function viewSettings() {
+  const wi = currentWeekIndex();
+  const groups = {};
+  WEIGHT_EXERCISES.forEach((w, i) => (groups[w.group] ||= []).push({ ...w, i }));
+  const customCount = Object.keys(state.settings.weights || {}).length;
+
+  const row = w => {
+    const c = weightCfg(w.name), bw = !!c?.bodyweight;
+    const current = PLAN[wi]?.days.flatMap(d => d.exercises).find(e => e.name === w.name);
+    const value = c?.weight > 0 ? c.weight : w.ref || '';
+    const hint = bw ? 'Wird ohne Zusatzgewicht ausgeführt'
+      : `${w.ref ? `Plan: ${fmtWeight(w.ref)}` : 'Plan: Körpergewicht'}${current ? ` · Woche ${wi + 1}: ${fmtWeight(current.weight)}` : ''}`;
+    return `<div class="wrow ${c ? 'custom' : ''}">
+      <div class="wrow-main"><strong>${esc(w.name)}</strong><span>${hint}</span>${c ? `<button class="wrow-reset" data-action="w-reset" data-i="${w.i}">Zurücksetzen</button>` : ''}</div>
+      <div class="seg" role="group" aria-label="Belastungsart ${esc(w.name)}">
+        <button class="${bw ? '' : 'active'}" data-action="w-mode" data-mode="weight" data-i="${w.i}">Gewicht</button>
+        <button class="${bw ? 'active' : ''}" data-action="w-mode" data-mode="bw" data-i="${w.i}">Körpergewicht</button>
+      </div>
+      <div class="wbox ${bw ? 'disabled' : ''}">
+        <button class="icon-btn" data-action="w-step" data-dir="-1" data-i="${w.i}" aria-label="Gewicht verringern">−</button>
+        <input class="input" type="number" inputmode="decimal" min="0" step="0.5" value="${value}" placeholder="${w.ref ? '' : 'Zusatz'}" data-w-i="${w.i}" aria-label="Startgewicht ${esc(w.name)}">
+        <span class="unit">kg</span>
+        <button class="icon-btn" data-action="w-step" data-dir="1" data-i="${w.i}" aria-label="Gewicht erhöhen">+</button>
+      </div>
+    </div>`;
+  };
+
+  return `<div class="grid">
+    <section class="card span-12">
+      <div class="card-head">
+        <div><div class="card-title">${icon('dumbbell')} Gewichte der Übungen</div>
+        <div class="card-sub">Startgewicht (Woche 1) anpassen – die Folgewochen werden anteilig mitgerechnet, die Progression des Plans bleibt erhalten.</div></div>
+        ${customCount ? `<button class="btn btn-ghost" data-action="w-reset-all">${icon('reset', 'i-sm')} Alle zurücksetzen</button>` : ''}
+      </div>
+      ${Object.entries(groups).map(([g, list]) => `<div class="wgroup"><div class="wgroup-title">${esc(g)}</div><div class="wlist">${list.map(row).join('')}</div></div>`).join('')
+        || '<p class="muted">Keine Übungen im Plan.</p>'}
+    </section>
+  </div>`;
+}
+
+
+/* =======================================================================
+   3.10 WORKOUT-MODAL
+   ======================================================================= */
+function openModal(dayId) {
+  if (!DAY_BY_ID[dayId]) return;
+  ui.modalDayId = dayId;
+  const root = $('#modalRoot');
+  renderModal();
+  root.classList.add('open');
+  root.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('locked');
+  $('#modal').scrollTop = 0;
+  const body = $('.modal-body', root); if (body) body.scrollTop = 0;
+}
+function closeModal() {
+  if (!ui.modalDayId) return;
+  ui.modalDayId = null;
+  const root = $('#modalRoot');
+  root.classList.remove('open');
+  root.setAttribute('aria-hidden', 'true');
+  if (!ui.focus) document.body.classList.remove('locked');
+  renderView(false);
+}
+
+function renderModal() {
+  const d = DAY_BY_ID[ui.modalDayId]; if (!d) return;
+  const modal = $('#modal');
+  const scroll = $('.modal-body', modal)?.scrollTop || 0;
+  const st = dayStatus(d), done = isDayDone(d), prog = dayProgress(d);
+  const idx = ALL_DAYS.indexOf(d);
+  const isToday = cmpDay(d.date, TODAY) === 0;
+
+  modal.innerHTML = `
+    <header class="modal-head">
+      <div class="modal-head-row">
+        <div style="min-width:0">
+          <div class="eyebrow">Woche ${d.weekIndex + 1} · ${d.day}, ${fmtDate(d.date)} · ${relDay(d.date)}</div>
+          <h2 id="modalTitle">${esc(d.name)}</h2>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="icon-btn" data-action="modal-step" data-dir="-1" ${idx <= 0 ? 'disabled style="opacity:.35"' : ''} aria-label="Vorheriger Tag">${icon('left')}</button>
+          <button class="icon-btn" data-action="modal-step" data-dir="1" ${idx >= ALL_DAYS.length - 1 ? 'disabled style="opacity:.35"' : ''} aria-label="Nächster Tag">${icon('right')}</button>
+          <button class="icon-btn" data-action="close-modal" aria-label="Schließen">${icon('x')}</button>
+        </div>
+      </div>
+      <div class="chips">
+        <span class="chip">${icon(TYPE_META[d.type].icon)}${TYPE_META[d.type].label}</span>
+        ${statusBadge(isToday && st !== 'done' ? 'today' : st)}
+        ${d.focus ? `<span class="chip">${icon('target')}${esc(d.focus)}</span>` : ''}
+        ${d.duration ? `<span class="chip">${icon('clock')}${d.duration} min</span>` : ''}
+      </div>
+      ${d.exercises.length ? `<div class="progress-line">${bar(prog, done ? 'success' : '')}<strong>${pct(prog)}%</strong></div>` : ''}
+    </header>
+
+    <div class="modal-body">
+      ${d.description ? `<p class="text-2" style="margin-bottom:${d.exercises.length ? 16 : 0}px">${esc(d.description)}</p>` : ''}
+      ${d.exercises.length ? `<div class="ex-list">${d.exercises.map(ex => exerciseCard(ex)).join('')}</div>`
+        : d.type === 'rest' ? `<div class="empty"><div class="empty-icon">${icon('moon')}</div><h3>Ruhetag</h3><p>Keine Übungen geplant. Erholung ist Teil des Fortschritts.</p></div>` : ''}
+    </div>
+
+    <footer class="modal-foot">
+      ${isCompletable(d) ? `<button class="btn ${done ? 'btn-ghost' : 'btn-success'}" data-action="toggle-day" data-day="${d.id}">${icon('check', 'i-sm')} ${done ? 'Als offen markieren' : 'Als erledigt markieren'}</button>` : '<span></span>'}
+      ${d.exercises.length && !done ? `<button class="btn btn-primary" data-action="start-workout" data-day="${d.id}">${icon('play', 'i-sm')} ${prog > 0 ? 'Training fortsetzen' : 'Training starten'}</button>` : ''}
+    </footer>`;
+  const body = $('.modal-body', modal); if (body) body.scrollTop = scroll;
+  ui.lastToggled = null;
+}
+
+function specGrid(ex, cls = '') {
+  const kind = unitKind(ex);
+  const amount = kind === 'min' && ex.sets === 1
+    ? ['Dauer', `${ex.reps} Min`]
+    : [kind === 'min' ? 'Intervalle' : `Sätze × ${kind === 'sek' ? 'Sek.' : 'Wdh.'}`, `${ex.sets} × ${ex.reps}${kind === 'min' ? ' Min' : ''}`];
+  const tile = ([label, value]) => `<div class="spec"><span>${label}</span><strong>${value}</strong></div>`;
+  return `<div class="specs ${cls}">${[
+    amount,
+    kind === 'min' ? null : ['Gewicht', fmtWeight(ex.weight)],
+    ex.rest > 0 ? ['Pause', `${ex.rest}s`] : null,
+    ex.rpe ? ['RPE', num(ex.rpe)] : null
+  ].filter(Boolean).map(tile).join('')}</div>`;
+}
+
+function exerciseCard(ex) {
+  const done = isExDone(ex), s = exStatus(ex), sd = setsDone(ex);
+  return `<div class="ex ${done ? 'is-done' : ''}">
+    <div class="ex-head">
+      <button class="check ${done ? 'checked' : ''} ${ui.lastToggled === ex.id ? 'pop' : ''}" data-action="toggle-ex" data-ex="${ex.id}" aria-label="${esc(ex.name)} abhaken" aria-pressed="${done}">${icon('check')}</button>
+      <div class="ex-title"><h4>${esc(ex.name)}</h4></div>
+      <span class="badge ${s.cls}">${s.label}</span>
+    </div>
+    ${specGrid(ex)}
+    ${ex.notes ? `<div class="ex-plan-note">${icon('info')}<span>${esc(ex.notes)}</span></div>` : ''}
+    <div class="sets-row"><span>Sätze ${sd}/${ex.sets}</span>
+      <div class="set-dots">${Array.from({ length: ex.sets }, (_, k) => `<button class="set-dot ${k < sd ? 'on' : ''}" data-action="set-sets" data-ex="${ex.id}" data-n="${k + 1}" aria-label="Satz ${k + 1}">${k + 1}</button>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
+
+/* =======================================================================
+   3.11 FOKUS-MODUS (geführtes Workout)
+   ======================================================================= */
+function openFocus(dayId) {
+  const d = DAY_BY_ID[dayId]; if (!d || !d.exercises.length) return;
+  if (ui.modalDayId) { ui.modalDayId = null; $('#modalRoot').classList.remove('open'); $('#modalRoot').setAttribute('aria-hidden', 'true'); }
+  const first = d.exercises.findIndex(ex => !isExDone(ex));
+  ui.focus = { dayId, exIndex: first < 0 ? 0 : first, startedAt: Date.now(), finished: false };
+  const root = $('#focusRoot');
+  renderFocus();
+  root.classList.add('open');
+  root.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('locked');
+  root.scrollTop = 0;
+}
+function closeFocus() {
+  if (!ui.focus) return;
+  ui.focus = null;
+  const root = $('#focusRoot');
+  root.classList.remove('open');
+  root.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('locked');
+  renderView(true);
+}
+
+function renderFocus() {
+  const f = ui.focus; if (!f) return;
+  const d = DAY_BY_ID[f.dayId], root = $('#focusRoot');
+  if (f.finished) { root.innerHTML = focusSummary(d); return; }
+
+  const ex = d.exercises[f.exIndex], sd = setsDone(ex), done = isExDone(ex);
+  const total = d.exercises.reduce((s, e) => s + e.sets, 0);
+  const totalDone = d.exercises.reduce((s, e) => s + setsDone(e), 0);
+  const allDone = d.exercises.every(isExDone);
+  const isLast = f.exIndex === d.exercises.length - 1;
+
+  root.innerHTML = `<div class="focus-shell">
+    <header class="focus-head">
+      <button class="icon-btn" data-action="close-focus" aria-label="Fokus-Modus verlassen">${icon('x')}</button>
+      <div class="title"><div class="eyebrow">Woche ${d.weekIndex + 1} · ${d.day} · Fokus-Modus</div><h2>${esc(d.name)}</h2></div>
+      <span class="focus-count">${totalDone}/${total} Sätze</span>
+    </header>
+    ${bar(totalDone / total, 'thick')}
+    <nav class="focus-strip" aria-label="Übungen">
+      ${d.exercises.map((e, i) => `<button class="fx-chip ${isExDone(e) ? 'done' : ''} ${i === f.exIndex ? 'active' : ''}" data-action="focus-goto" data-n="${i}">
+        <span class="fx-num">${isExDone(e) ? icon('check') : i + 1}</span>${esc(e.name)}</button>`).join('')}
+    </nav>
+
+    <div class="focus-grid">
+      <section class="card focus-card">
+        <div class="eyebrow">Übung ${f.exIndex + 1} von ${d.exercises.length}</div>
+        <h1>${esc(ex.name)}</h1>
+        ${specGrid(ex, 'big')}
+        ${ex.notes ? `<div class="ex-plan-note">${icon('info')}<span>${esc(ex.notes)}</span></div>` : ''}
+
+        <div class="big-sets"><strong>${done ? ex.sets : Math.min(sd + 1, ex.sets)}</strong><span>/ ${ex.sets} ${isCardio(ex) ? (done ? 'Abschnitte erledigt' : 'Abschnitt') : (done ? 'Sätze erledigt' : 'Satz')}</span></div>
+        <div class="focus-sets">
+          ${Array.from({ length: ex.sets }, (_, k) => `<button class="set-dot ${k < sd ? 'on' : ''}" data-action="set-sets" data-ex="${ex.id}" data-n="${k + 1}" aria-label="Satz ${k + 1}">${k < sd ? icon('check', 'i-sm') : k + 1}</button>`).join('')}
+        </div>
+
+        ${done
+          ? (allDone
+            ? `<button class="btn btn-success btn-lg btn-block" data-action="finish-workout">${icon('trophy', 'i-sm')} Workout abschließen</button>`
+            : `<button class="btn btn-primary btn-lg btn-block" data-action="focus-next-open">Nächste Übung ${icon('right', 'i-sm')}</button>`)
+          : `<button class="btn btn-primary btn-lg btn-block" data-action="complete-set" data-ex="${ex.id}">${icon('check', 'i-sm')} ${isCardio(ex) ? 'Abschnitt' : 'Satz'} ${sd + 1} abschließen</button>`}
+      </section>
+
+      <aside class="card" style="padding:28px 20px">
+        <div class="card-head" style="justify-content:center"><div class="card-title">${icon('timer')} Pause</div></div>
+        ${timerWidget(230, true)}
+      </aside>
+    </div>
+
+    <footer class="focus-foot">
+      <button class="btn btn-ghost" data-action="focus-step" data-dir="-1" ${f.exIndex === 0 ? 'disabled' : ''}>${icon('left', 'i-sm')} Zurück</button>
+      <button class="btn btn-ghost" data-action="finish-workout">${icon('flag', 'i-sm')} Beenden</button>
+      <button class="btn btn-ghost" data-action="focus-step" data-dir="1" ${isLast ? 'disabled' : ''}>Weiter ${icon('right', 'i-sm')}</button>
+    </footer>
+  </div>`;
+  updateTimerUI();
+  ui.lastToggled = null;
+}
+
+function focusSummary(d) {
+  const f = ui.focus;
+  const mins = Math.max(1, Math.round((Date.now() - f.startedAt) / 60000));
+  const sets = d.exercises.reduce((s, e) => s + setsDone(e), 0);
+  return `<div class="focus-shell"><div class="finish">
+    <div class="finish-badge">${icon('trophy')}</div>
+    <div class="eyebrow">${esc(d.name)}</div>
+    <h1>Workout abgeschlossen!</h1>
+    <p class="text-2">Starke Arbeit. Dein Fortschritt wurde gespeichert – Zeit für Erholung, Protein und Schlaf.</p>
+    <div class="finish-stats">
+      <div class="card"><strong>${d.exercises.filter(isExDone).length}/${d.exercises.length}</strong><span>Übungen</span></div>
+      <div class="card"><strong>${sets}</strong><span>Sätze</span></div>
+      <div class="card"><strong>${d.exercises.reduce((s, e) => s + (isTimed(e) ? 0 : setsDone(e) * e.reps), 0)}</strong><span>Wiederholungen</span></div>
+      <div class="card"><strong>${mins} min</strong><span>Dauer</span></div>
+    </div>
+    <div class="actions" style="justify-content:center">
+      <button class="btn btn-primary btn-lg" data-action="close-focus">Zum Dashboard</button>
+      <button class="btn btn-ghost btn-lg" data-action="summary-progress">Fortschritt ansehen</button>
+    </div>
+  </div></div>`;
+}
+
+
+/* =======================================================================
+   3.12 TIMER
+   ======================================================================= */
+const timer = { duration: 90, remaining: 90, running: false, endAt: 0, interval: null, finished: false };
+let audioCtx = null;
+
+function timerWidget(size = 260, compact = false) {
+  const stroke = compact ? 10 : 12, r = (size - stroke) / 2, c = 2 * Math.PI * r;
+  return `<div class="timer-widget ${compact ? 'compact' : ''}" data-timer-widget>
+    <div class="timer-ring" style="width:${size}px;height:${size}px;max-width:100%;font-size:${size / 13}px">
+      <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
+        <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}"/>
+        <circle class="ring-fg timer-fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke="url(#gradPrimary)"
+          stroke-dasharray="${c}" stroke-dashoffset="0" data-timer-ring data-c="${c}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
+      </svg>
+      <div class="timer-center"><span class="timer-text" data-timer-text role="timer">${fmtTime(timer.remaining)}</span><span class="timer-sub" data-timer-sub>Bereit</span></div>
+    </div>
+    <div class="timer-controls">
+      <button class="icon-btn" data-action="timer-add" data-sec="-15" aria-label="15 Sekunden weniger">−15</button>
+      <button class="btn-round" data-action="timer-toggle" data-timer-toggle aria-label="Start/Pause">${icon(timer.running ? 'pause' : 'play')}</button>
+      <button class="icon-btn" data-action="timer-reset" aria-label="Zurücksetzen">${icon('reset', 'i-sm')}</button>
+      <button class="icon-btn" data-action="timer-add" data-sec="15" aria-label="15 Sekunden mehr">+15</button>
+    </div>
+    <div class="presets">${[60, 90, 120, 180].map(s => `<button class="preset" data-action="timer-preset" data-sec="${s}">${s}s</button>`).join('')}</div>
+  </div>`;
+}
+
+function unlockAudio() {
+  try {
+    audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch { /* Audio nicht verfügbar */ }
+}
+function beep() {
+  if (!state.settings.sound) return;
+  try {
+    unlockAudio();
+    const t0 = audioCtx.currentTime;
+    [0, 0.22, 0.44].forEach((dt, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = i === 2 ? 1320 : 880;
+      g.gain.setValueAtTime(0.0001, t0 + dt);
+      g.gain.exponentialRampToValueAtTime(0.3, t0 + dt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.18);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t0 + dt); o.stop(t0 + dt + 0.2);
+    });
+  } catch { /* ignorieren */ }
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+function timerStart() {
+  unlockAudio();
+  if (timer.remaining <= 0) timer.remaining = timer.duration;
+  timer.finished = false;
+  timer.running = true;
+  timer.endAt = Date.now() + timer.remaining * 1000;
+  clearInterval(timer.interval);
+  timer.interval = setInterval(timerTick, 200);
+  updateTimerUI();
+}
+function timerPause() {
+  if (timer.running) timer.remaining = Math.max(0, (timer.endAt - Date.now()) / 1000);
+  timer.running = false;
+  clearInterval(timer.interval);
+  updateTimerUI();
+}
+function timerReset() { timerPause(); timer.remaining = timer.duration; timer.finished = false; updateTimerUI(); }
+function timerSet(sec, autostart = false) {
+  timerPause();
+  timer.duration = sec; timer.remaining = sec; timer.finished = false;
+  if (autostart) timerStart(); else updateTimerUI();
+}
+function timerAdd(sec) {
+  const cur = timer.running ? (timer.endAt - Date.now()) / 1000 : timer.remaining;
+  const rem = Math.max(5, cur + sec);
+  timer.duration = Math.max(5, timer.duration + sec, rem);
+  if (timer.running) timer.endAt = Date.now() + rem * 1000;
+  else { timer.remaining = rem; timer.finished = false; }
+  updateTimerUI();
+}
+function timerTick() {
+  timer.remaining = (timer.endAt - Date.now()) / 1000;
+  if (timer.remaining <= 0) {
+    timer.remaining = 0; timer.running = false; timer.finished = true;
+    clearInterval(timer.interval);
+    beep();
+    toast('Pause vorbei – nächster Satz!', 'success', 'zap');
+  }
+  updateTimerUI();
+}
+
+// Aktualisiert alle Timer-Darstellungen (Widget(s), Topbar-Pille, Tab-Titel) ohne Re-Render
+function updateTimerUI() {
+  const rem = timer.running ? Math.max(0, (timer.endAt - Date.now()) / 1000) : timer.remaining;
+  const ratio = timer.duration ? rem / timer.duration : 0;
+  const text = fmtTime(rem);
+  const sub = timer.finished ? 'Los geht’s!' : timer.running ? 'Pause läuft' : rem < timer.duration ? 'Pausiert' : 'Bereit';
+  $$('[data-timer-text]').forEach(el => { el.textContent = text; });
+  $$('[data-timer-sub]').forEach(el => { el.textContent = sub; });
+  $$('[data-timer-ring]').forEach(el => { el.style.strokeDashoffset = (+el.dataset.c) * (1 - ratio); });
+  $$('[data-timer-toggle]').forEach(el => { el.innerHTML = icon(timer.running ? 'pause' : 'play'); });
+  $$('[data-timer-widget]').forEach(el => {
+    el.classList.toggle('running', timer.running);
+    el.classList.toggle('ending', timer.running && rem <= 10);
+    el.classList.toggle('finished', timer.finished);
+  });
+  $$('.preset').forEach(el => el.classList.toggle('active', +el.dataset.sec === timer.duration));
+  const pill = $('#timerPill');
+  const active = timer.running || (rem > 0 && rem < timer.duration);
+  pill.classList.toggle('show', active && ui.route !== 'timer');
+  pill.classList.toggle('paused', !timer.running);
+  document.title = timer.running ? `${text} · Pause – ${PLAN_CONFIG.appName}` : `${PLAN_CONFIG.appName} · Performance Training`;
+}
+
+
+/* =======================================================================
+   3.13 AKTIONEN & EVENTS
+   ======================================================================= */
+function setDayComplete(dayId, value, { markExercises = true, celebrate = true } = {}) {
+  const d = DAY_BY_ID[dayId]; if (!d || !isCompletable(d)) return;
+  const s = ensureDay(dayId);
+  s.completed = value;
+  s.completedAt = value ? new Date().toISOString() : null;
+  if (value && markExercises) {
+    d.exercises.forEach(ex => {
+      if (isExDone(ex)) return;
+      const e = ensureEx(ex.id); e.done = true; e.setsDone = ex.sets;
+    });
+  }
+  save();
+  if (value && celebrate) {
+    if (isWorkout(d)) { confetti(); toast(`${d.name} abgeschlossen!`, 'success', 'trophy'); }
+    else toast('Regeneration erledigt – gut gemacht!', 'success', 'leaf');
+  }
+}
+
+// Synchronisiert den Tagesstatus mit den Übungen (alle erledigt => Tag erledigt)
+function syncDay(d, { celebrate = true } = {}) {
+  const all = d.exercises.length && d.exercises.every(isExDone);
+  if (all && !isDayDone(d)) { setDayComplete(d.id, true, { markExercises: false, celebrate }); return true; }
+  if (!all && isDayDone(d)) { ensureDay(d.id).completed = false; save(); }
+  return false;
+}
+
+function refresh() {
+  if (ui.focus) renderFocus();
+  else if (ui.modalDayId) renderModal();
+  else renderView(false);
+  renderChrome();
+}
+
+const ACTIONS = {
+  'open-day': el => openModal(el.dataset.day),
+  'close-modal': () => closeModal(),
+  'modal-step': el => {
+    const i = ALL_DAYS.findIndex(d => d.id === ui.modalDayId) + (+el.dataset.dir);
+    if (ALL_DAYS[i]) { ui.modalDayId = ALL_DAYS[i].id; renderModal(); $('.modal-body')?.scrollTo(0, 0); }
+  },
+
+  'toggle-ex': el => {
+    const ex = EX_BY_ID[el.dataset.ex]; if (!ex) return;
+    const s = ensureEx(ex.id);
+    s.done = !s.done;
+    s.setsDone = s.done ? ex.sets : 0;
+    ui.lastToggled = ex.id;
+    save();
+    syncDay(DAY_BY_ID[ex.dayId]);
+    refresh();
+  },
+
+  'set-sets': el => {
+    const ex = EX_BY_ID[el.dataset.ex]; if (!ex) return;
+    const s = ensureEx(ex.id);
+    let n = +el.dataset.n;
+    if (setsDone(ex) === n) n -= 1;          // erneuter Klick auf letzten Punkt = zurücknehmen
+    s.setsDone = n;
+    s.done = n >= ex.sets;
+    save();
+    const finished = syncDay(DAY_BY_ID[ex.dayId], { celebrate: !ui.focus });
+    if (ui.focus && finished) { ui.focus.finished = true; confetti(); }
+    refresh();
+  },
+
+  'toggle-day': el => {
+    const d = DAY_BY_ID[el.dataset.day]; if (!d) return;
+    setDayComplete(d.id, !isDayDone(d));
+    refresh();
+  },
+
+  'start-workout': el => openFocus(el.dataset.day),
+  'close-focus': () => closeFocus(),
+  'summary-progress': () => { closeFocus(); navigate('progress'); },
+  'focus-goto': el => { ui.focus.exIndex = +el.dataset.n; renderFocus(); },
+  'focus-step': el => {
+    const d = DAY_BY_ID[ui.focus.dayId];
+    ui.focus.exIndex = clamp(ui.focus.exIndex + (+el.dataset.dir), 0, d.exercises.length - 1);
+    renderFocus();
+  },
+  'focus-next-open': () => {
+    const d = DAY_BY_ID[ui.focus.dayId];
+    const n = d.exercises.length;
+    for (let k = 1; k <= n; k++) {
+      const i = (ui.focus.exIndex + k) % n;
+      if (!isExDone(d.exercises[i])) { ui.focus.exIndex = i; break; }
+    }
+    renderFocus();
+  },
+
+  'complete-set': el => {
+    const ex = EX_BY_ID[el.dataset.ex]; if (!ex) return;
+    const s = ensureEx(ex.id);
+    s.setsDone = Math.min(ex.sets, setsDone(ex) + 1);
+    if (s.setsDone >= ex.sets) {
+      s.done = true;
+      toast(`${ex.name} erledigt`, 'success', 'check');
+    }
+    save();
+    const d = DAY_BY_ID[ex.dayId];
+    if (syncDay(d, { celebrate: false })) {
+      ui.focus.finished = true;
+      timerPause();
+      confetti();
+    } else {
+      if (ex.rest > 0) timerSet(ex.rest, true);
+      if (s.done) ACTIONS['focus-next-open']();
+    }
+    renderFocus();
+  },
+
+  'finish-workout': () => {
+    const d = DAY_BY_ID[ui.focus.dayId];
+    if (!d.exercises.every(isExDone) && !confirm('Noch nicht alle Übungen sind abgehakt. Workout trotzdem als erledigt markieren?')) return;
+    setDayComplete(d.id, true, { markExercises: false, celebrate: false });
+    ui.focus.finished = true;
+    timerPause();
+    confetti();
+    renderFocus();
+  },
+
+  'select-week': el => { ui.selectedWeek = +el.dataset.week; renderView(false); scrollTabs(); },
+  'week-step': el => { ui.selectedWeek = clamp(ui.selectedWeek + (+el.dataset.dir), 0, PLAN.length - 1); renderView(false); scrollTabs(); },
+  'goto-week': el => { ui.selectedWeek = +el.dataset.week; navigate('plan'); },
+
+  'timer-toggle': () => timer.running ? timerPause() : timerStart(),
+  'timer-reset': () => timerReset(),
+  'timer-preset': el => timerSet(+el.dataset.sec, true),
+  'timer-add': el => timerAdd(+el.dataset.sec),
+  'toggle-sound': el => {
+    state.settings.sound = !state.settings.sound; save();
+    el.classList.toggle('on', state.settings.sound);
+    el.setAttribute('aria-checked', state.settings.sound);
+    toast(state.settings.sound ? 'Signalton aktiviert' : 'Signalton deaktiviert', 'info', state.settings.sound ? 'volume' : 'mute');
+  },
+
+  'reset-all': () => {
+    if (!confirm('Gesamten Trainingsfortschritt zurücksetzen? Dies kann nicht rückgängig gemacht werden.')) return;
+    const fresh = freshState();
+    fresh.meta = { seeded: true, autoStart: state.meta.autoStart };
+    fresh.settings = state.settings;
+    state = fresh; saveNow(); location.reload();
+  },
+  'load-demo': () => {
+    if (!confirm('Fortschritt durch Demo-Daten ersetzen? Einstellungen bleiben erhalten.')) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ settings: state.settings }));
+    skipSave = true; location.reload();
+  },
+
+  'w-mode': el => {
+    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
+    const cfg = (state.settings.weights[w.name] ||= {});
+    cfg.bodyweight = el.dataset.mode === 'bw';
+    if (!cfg.bodyweight && !(cfg.weight > 0)) delete state.settings.weights[w.name];
+    updateWeights();
+  },
+  'w-step': el => {
+    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
+    const cfg = (state.settings.weights[w.name] ||= {});
+    const cur = cfg.weight > 0 ? cfg.weight : w.ref;
+    const step = cur === 0 || cur >= 40 ? 2.5 : cur >= 10 ? 1 : 0.5;
+    const next = Math.max(0, Math.round((cur + step * (+el.dataset.dir)) * 100) / 100);
+    if (next > 0) { cfg.weight = next; cfg.bodyweight = false; } else delete state.settings.weights[w.name];
+    updateWeights();
+  },
+  'w-reset': el => {
+    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
+    delete state.settings.weights[w.name];
+    updateWeights();
+  },
+  'w-reset-all': () => {
+    if (!confirm('Alle Gewichte auf die Planwerte zurücksetzen?')) return;
+    state.settings.weights = {};
+    updateWeights();
+    toast('Gewichte auf Planwerte zurückgesetzt', 'info', 'reset');
+  }
+};
+
+function updateWeights() {
+  applyWeightSettings();
+  save();
+  renderView(false);
+}
+
+function scrollTabs() {
+  const tabs = $('#weekTabs'), active = $('.week-tab.active', tabs || document);
+  if (tabs && active) tabs.scrollTo({ left: active.offsetLeft - tabs.clientWidth / 2 + active.clientWidth / 2, behavior: 'smooth' });
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action], [data-route]');
+  if (!el || el.disabled) return;
+  if (el.dataset.action) {
+    const fn = ACTIONS[el.dataset.action];
+    if (fn) { e.preventDefault(); fn(el, e); }
+  } else if (el.dataset.route) {
+    e.preventDefault();
+    if (ui.modalDayId) closeModal();
+    navigate(el.dataset.route);
+  }
+});
+
+// Tastatur: Enter/Space für role="button"-Elemente, Escape schließt Overlays
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (ui.focus) closeFocus(); else if (ui.modalDayId) closeModal(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"][data-action]')) { e.preventDefault(); e.target.click(); }
+});
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'progressExercise') { ui.progressExercise = t.value; renderView(false); return; }
+  if (t.dataset.wI !== undefined) {
+    const w = WEIGHT_EXERCISES[+t.dataset.wI]; if (!w) return;
+    const v = parseFloat(String(t.value).replace(',', '.'));
+    if (Number.isFinite(v) && v > 0 && v <= 1000) state.settings.weights[w.name] = { weight: Math.round(v * 100) / 100, bodyweight: false };
+    else delete state.settings.weights[w.name];
+    updateWeights();
+  }
+});
+
+
+/* =======================================================================
+   3.14 ROUTER, CHROME & INIT
+   ======================================================================= */
+function navigate(route) {
+  if (!ROUTES[route]) route = 'dashboard';
+  if (location.hash !== `#${route}`) location.hash = route;
+  else { ui.route = route; renderView(true); }
+}
+window.addEventListener('hashchange', () => {
+  const r = location.hash.slice(1);
+  ui.route = ROUTES[r] ? r : 'dashboard';
+  if (ui.focus) closeFocus();
+  renderView(true);
+  window.scrollTo(0, 0);
+});
+
+function renderView(animate = true) {
+  ANIM = animate;
+  const view = $('#view');
+  view.classList.toggle('no-anim', !animate);
+  if (animate) { view.style.animation = 'none'; void view.offsetWidth; view.style.animation = ''; }
+  view.innerHTML = ROUTES[ui.route].render();
+  $$('.card', view).forEach((c, i) => { if (!c.style.getPropertyValue('--i')) c.style.setProperty('--i', Math.min(i, 12)); });
+  if (animate) { animateRings(view); animateCounts(view); }
+  if (ui.route === 'plan') scrollTabs();
+  ui.lastToggled = null;
+  ANIM = true;
+  renderChrome();
+  updateTimerUI();
+}
+
+function renderChrome() {
+  const r = ROUTES[ui.route];
+  const hour = new Date().getHours();
+  const greet = hour < 11 ? 'Guten Morgen' : hour < 18 ? 'Guten Tag' : 'Guten Abend';
+  $('#viewTitle').textContent = ui.route === 'dashboard' ? `${greet}, ${PLAN_CONFIG.athlete}` : r.title;
+  $('#topEyebrow').textContent = fmtLong(TODAY);
+
+  const t = todayDay();
+  const todayBadge = t && isWorkout(t) && !isDayDone(t) ? '<span class="nav-badge">1</span>' : '';
+  $('#sideNav').innerHTML = `<div class="nav-label">Menü</div>` + Object.entries(ROUTES).map(([k, v]) =>
+    `<a href="#${k}" class="nav-item ${k === ui.route ? 'active' : ''}" data-route="${k}" ${k === ui.route ? 'aria-current="page"' : ''}>${icon(v.icon)}<span>${v.title}</span>${k === 'today' ? todayBadge : ''}</a>`).join('');
+  $('#bottomNav').innerHTML = Object.entries(ROUTES).map(([k, v]) =>
+    `<a href="#${k}" class="bn-item ${k === ui.route ? 'active' : ''}" data-route="${k}">${icon(v.icon)}<span>${v.short}</span></a>`).join('');
+
+  if (PLAN.length) {
+    const g = globalStats(), wi = currentWeekIndex();
+    $('#sideCard').innerHTML = `
+      <div class="row"><span class="muted">Gesamtfortschritt</span><strong>${pct(g.planProgress)}%</strong></div>
+      <div style="margin:10px 0 12px">${bar(g.planProgress)}</div>
+      <div class="row"><span class="muted">Woche</span><span>${wi + 1} / ${PLAN.length}</span></div>
+      <div class="row" style="margin-top:4px"><span class="muted">Serie</span><span>${icon('flame', 'i-sm')} ${g.streak}</span></div>`;
+  }
+}
+
+function init() {
+  $('#brandLogo').innerHTML = icon('zap');
+  $('#brandName').textContent = PLAN_CONFIG.appName;
+  $('#brandSub').textContent = PLAN_CONFIG.planName;
+  $('#avatar').textContent = PLAN_CONFIG.athlete.split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
+  $('#sideActions').innerHTML = `
+    <button class="link-btn" data-action="load-demo" title="Demo-Daten laden">${icon('refresh', 'i-sm')}<span>Demo-Daten laden</span></button>
+    <button class="link-btn" data-action="reset-all" title="Fortschritt zurücksetzen">${icon('trash', 'i-sm')}<span>Fortschritt zurücksetzen</span></button>`;
+
+  if (PLAN_CONFIG.seedDemoProgress && !state.meta.seeded) seedDemoProgress();
+
+  const r = location.hash.slice(1);
+  ui.route = ROUTES[r] ? r : 'dashboard';
+  renderView(true);
+}
+
+init();
+</script>
+</body>
+</html>

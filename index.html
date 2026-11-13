@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07080c">
-<title>APEX · Performance Training</title>
+<title>Mein Training · Kräftig & beweglich</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6cff'/%3E%3Cstop offset='1' stop-color='%233ec9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M18 5 9 18h6l-1 9 9-13h-6z' fill='white'/%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6cff'/%3E%3Cstop offset='1' stop-color='%233ec9ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M18 5 9 18h6l-1 9 9-13h-6z' fill='white'/%3E%3C/svg%3E">
 
 <!--
   ╔══════════════════════════════════════════════════════════════════════╗
@@ -110,6 +110,7 @@ body::before {
 }
 body.locked { overflow: hidden; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+a.nav-item, a.bn-item { text-decoration: none; }
 input, textarea, select { font: inherit; color: inherit; }
 h1, h2, h3, h4, p { margin: 0; }
 .i { width: 20px; height: 20px; flex-shrink: 0; }
@@ -814,6 +815,60 @@ select option { background: var(--surface-2); }
 }
 
 /* =====================================================================
+   ZIELE, REGELN, MESSWERTE, TESTS
+   ===================================================================== */
+.goal-list { display: flex; flex-direction: column; gap: 10px; }
+.goal { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.03); }
+.goal-icon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(124,108,255,.14); color: #a99eff; flex-shrink: 0; }
+.goal-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.goal-main strong { font-weight: 650; }
+.goal-main span { font-size: 12.5px; color: var(--muted); }
+.rule-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; color: var(--text-2); }
+.rule-list li { padding-left: 14px; position: relative; }
+.rule-list li::before { content: ""; position: absolute; left: 0; top: .6em; width: 5px; height: 5px; border-radius: 50%; background: var(--primary-2); }
+.rule-list strong { color: var(--text); }
+.measure-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.unit-input { position: relative; }
+.unit-input input { padding-right: 40px; }
+.unit-input em { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12.5px; color: var(--muted); pointer-events: none; }
+.select-ex, .select-week { width: auto; min-width: 0; max-width: 100%; }
+.hscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px 4px; }
+.test-table { width: 100%; min-width: 620px; border-collapse: separate; border-spacing: 0 8px; font-size: 13px; }
+.test-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; padding: 0 6px; }
+.test-table td { padding: 0 6px; vertical-align: middle; }
+.test-table td:first-child { min-width: 150px; }
+.test-table td strong { display: block; font-weight: 650; }
+.test-table td span { font-size: 11.5px; color: var(--muted); }
+.test-table input { min-width: 74px; text-align: center; }
+
+/* Eigenes Gewicht eintragen */
+.wlog { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(62,201,255,.06); border: 1px solid rgba(62,201,255,.18); }
+.wlog-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.wlog-label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--primary-2); font-weight: 700; }
+.wlog-label em { font-style: normal; color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 600; }
+.wlog-box { display: flex; align-items: center; gap: 6px; }
+.wlog-box input { width: 84px; text-align: center; font-weight: 750; font-size: 17px; padding: 8px 6px; }
+.wlog-box .icon-btn { width: 40px; height: 40px; font-size: 18px; }
+.wlog-box .unit { font-size: 13px; color: var(--muted); font-weight: 600; }
+.wlog-hint { margin-top: 8px; font-size: 12.5px; color: var(--text-2); line-height: 1.45; }
+.wval { font-weight: 750; font-size: 16px; white-space: nowrap; }
+.wval small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.wval.muted { font-weight: 600; font-size: 13px; }
+
+/* Touch-Geräte: keine "klebenden" Hover-Effekte nach dem Antippen */
+@media (hover: none) {
+  .card:hover { border-color: var(--border); }
+  .card.lift:hover, .ws-day:hover, .day-card:hover, .btn-primary:hover, .btn-success:hover, .timer-pill:hover, .btn-round:hover { transform: none; box-shadow: none; }
+  .btn-primary:hover { box-shadow: var(--glow); }
+  .day-card:hover { border-color: var(--border); }
+  .day-card.is-today:hover { border-color: rgba(124,108,255,.6); }
+  .ws-day:hover { background: rgba(255,255,255,.03); border-color: var(--border); }
+  .ws-day.today:hover { border-color: rgba(124,108,255,.55); background: rgba(124,108,255,.1); }
+  .hm-cell:not([disabled]):hover, .set-dot:hover { transform: none; }
+}
+button, a, .hm-cell { -webkit-tap-highlight-color: transparent; }
+
+/* =====================================================================
    RESPONSIVE
    ===================================================================== */
 @media (max-width: 1280px) {
@@ -853,6 +908,7 @@ select option { background: var(--surface-2); }
   .day-card { min-height: 190px; padding: 14px; }
   .specs { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .specs.big .spec strong { font-size: 22px; }
+  .spec strong { white-space: normal; overflow-wrap: anywhere; hyphens: manual; line-height: 1.2; }
   .rings-row { gap: 12px; }
   .finish-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .focus-shell { padding: 14px 14px 30px; }
@@ -862,13 +918,40 @@ select option { background: var(--surface-2); }
   .toast-stack { left: 14px; right: 14px; bottom: calc(86px + env(safe-area-inset-bottom)); }
   .toast { max-width: none; }
   .week-head { gap: 16px; }
-  .wrow { grid-template-columns: 1fr auto; gap: 10px; }
-  .wrow-main { grid-column: 1 / -1; }
+  .wrow { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .wrow-main { grid-column: auto; }
+  .wrow .seg, .wrow .wval { justify-self: start; }
+  .wlog-box { width: 100%; }
+  .wlog-box input { flex: 1; min-width: 0; }
+  .wbox input { flex: 1; min-width: 0; }
+
+  /* iOS zoomt bei Eingabefeldern unter 16px automatisch hinein */
+  .input, .field input, .field select, textarea.input, .wbox input { font-size: 16px; }
+  .card-head { flex-wrap: wrap; }
+  .card-head > .btn { padding: 9px 14px; font-size: 13.5px; }
+  .measure-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .measure-grid .field:first-child { grid-column: 1 / -1; }
+  .select-ex, .select-week { width: 100%; }
+  .heatmap { min-width: 620px; }
+  .week-head > div:first-child { min-width: 0; }
+  .week-head h2 { font-size: 22px; }
+  .week-kpis { gap: 18px; }
+  .hero h2 { overflow-wrap: anywhere; }
+  .hero .actions .btn-lg { flex: 1 1 auto; padding: 14px 18px; }
+  .focus-card h1 { overflow-wrap: anywhere; }
+  .focus-foot { gap: 8px; }
+  .focus-foot .btn { flex: 1; padding: 12px 8px; font-size: 13.5px; }
+  .ex-head { gap: 10px; }
+  .ex-title h4 { font-size: 15px; }
+  .modal-head h2 { font-size: 20px; }
+  .modal-head-row { gap: 8px; }
+  .modal-head .icon-btn { width: 36px; height: 36px; }
 
   .modal-root { padding: 0; place-items: end stretch; }
-  .modal { width: 100%; max-height: 94vh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
+  .modal { width: 100%; max-height: 94vh; max-height: 94dvh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
   .modal-head, .modal-body, .modal-foot { padding-left: 18px; padding-right: 18px; }
   .modal-foot { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .modal-foot .btn { flex: 1 1 auto; }
 
   .bottom-nav {
     display: grid; grid-template-columns: repeat(6, 1fr);
@@ -957,64 +1040,30 @@ select option { background: var(--surface-2); }
    3.1 KONFIGURATION
    ======================================================================= */
 const PLAN_CONFIG = {
-  appName: 'APEX',
-  planName: 'Fit & Gesund',
-  athlete: 'Margit',            // Dein Name für Begrüßung & Avatar
-  // Startdatum des Plans im Format 'JJJJ-MM-TT'. Die erste Woche beginnt am Montag davor;
-  // Tage vor dem Startdatum, die im Plan fehlen, werden einfach nicht angezeigt.
-  // 'auto' = Demo-Modus: Plan startet 2 Wochen vor der aktuellen Woche.
-  startDate: '2027-01-01',
+  appName: 'Mein Training',
+  planName: 'Kräftig & beweglich',
+  athlete: 'Margit',            // Name für Begrüßung & Avatar
+  // Startdatum des Plans (JJJJ-MM-TT). Die erste Woche beginnt am Montag davor;
+  // Tage vor dem Startdatum, die im Plan fehlen, werden nicht angezeigt.
+  startDate: '2026-12-25',
   // Bei Austausch des Plans den Key ändern, damit alte Fortschrittsdaten nicht auf neue Übungen gemappt werden.
-  storageKey: 'margit-plan-2027-v1',
-  // true = beim ersten Start eine Demo-Historie (bereits erledigte Workouts) erzeugen.
+  storageKey: 'margit-plan-v2-2026-12',
   seedDemoProgress: false,
-  // Zum Testen ein anderes "Heute" erzwingen, z. B. '2026-11-12'. null = echtes Datum.
-  debugToday: null,
+  // Zum Testen ein anderes "Heute" erzwingen, z. B. per URL: index.html?heute=2027-01-12
+  debugToday: (() => { try { const v = new URLSearchParams(location.search).get('heute'); return /^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : null; } catch { return null; } })(),
   weightUnit: 'kg'
 };
 
-// ========================================
-// TRAININGSPLAN HIER EINFÜGEN
-// ========================================
-/*
-  Ersetze `trainingPlan` durch deinen echten Plan. Format:
+// Etappenziele (Dashboard-Karte). week = Planwoche, in der das Ziel liegt (null = nach Planende).
+const GOALS = [
+  { title: 'Wings for Life World Run', sub: '10 km · Mai 2027 (genaues Datum folgt)', week: 20, icon: 'flag' },
+  { title: 'Bergtour Giglachseen', sub: 'über den Duisitzkarsee · Sommer 2027', week: null, icon: 'trend' },
+  { title: 'Wolfgangseelauf', sub: '10 km · Oktober 2027 (langfristig)', week: null, icon: 'award' }
+];
 
-  const trainingPlan = [
-    {                                   // ── Woche 1
-      title: 'Grundlagen aufbauen',     // Überschrift der Woche (optional)
-      phase: 'Akkumulation',            // Trainingsphase (optional)
-      focus: 'Technik & Volumen',       // Wochenziel (optional)
-      days: [
-        {
-          day: 'Montag',                // Montag … Sonntag (bestimmt das Datum innerhalb der Woche)
-          type: 'training',             // 'training' | 'optional' | 'recovery' | 'rest'
-          name: 'Training A – Push',
-          focus: 'Brust · Schultern · Trizeps',   // optional
-          duration: 60,                 // geplante Minuten (optional)
-          description: '',              // Freitext, v. a. für recovery/rest (optional)
-          exercises: [
-            {
-              name: 'Bankdrücken',
-              sets: 4,
-              reps: 8,                  // Zahl (bei Zeit-Übungen: Dauer + unit: 'Sek' bzw. 'Min')
-              weight: 80,               // kg, 0 = Körpergewicht
-              rest: 120,                // Pause in Sekunden
-              rpe: 8,                   // Ziel-RPE (optional)
-              notes: 'Kontrollierte Exzentrik', // Coaching-Hinweis (optional)
-              unit: 'Wdh.'              // optional: 'Wdh.' (Standard), 'Sek' oder 'Min' (Cardio)
-            }
-          ]
-        },
-        { day: 'Dienstag', type: 'recovery', name: 'Regeneration', description: 'Mobility & lockeres Cardio' },
-        { day: 'Donnerstag', type: 'rest', name: 'Pause' }
-      ]
-    }
-    // , { … Woche 2 … }
-  ];
-
-  Die Anzahl der Wochen und Tage ist frei. Die Dashboard-Logik passt sich automatisch an.
-  Bei Austausch zusätzlich `seedDemoProgress: false` und ein neues `storageKey` setzen.
-*/
+// ========================================
+// TRAININGSPLAN (Version 2) – wird unten aus den Plan-Tabellen erzeugt
+// ========================================
 const trainingPlan = buildPlan();
 // ========================================
 // ENDE TRAININGSPLAN
@@ -1023,168 +1072,279 @@ const trainingPlan = buildPlan();
 
 /* =======================================================================
    3.3 PLAN-GENERATOR
-   Erzeugt den 26-Wochen-Plan aus Vorlagen. Wird nicht benötigt, sobald
-   `trainingPlan` oben direkt als Array von Hand geschrieben wird.
-   Läuft vor allen anderen Definitionen – deshalb bewusst eigenständig.
+   Setzt den 26-Wochen-Plan (Version 2) aus den Tabellen des Plans zusammen.
+   Wochenstruktur: Mo Kraft A · Di Lauf-Geh · Mi Beweglichkeit · Do Kraft B ·
+   Fr Spaß-Einheit (optional) · Sa Ausdauer lang · So Ruhetag.
    ======================================================================= */
 function buildPlan() {
   const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
-  const FIRST_DAY = 4;   // Plan startet an einem Freitag → Woche 1 enthält nur Fr–So
+  const TEST_WEEKS = [1, 7, 14, 21, 26];
+  const RECOVERY_WEEKS = [7, 14, 21];
 
-  // Übungsvariante: Name, Zusatzgewicht (kg, 0 = Körpergewicht), Hinweis, Pause (s), Basis-Sekunden bei Zeit-Übungen
-  const x = (name, w, notes, rest = 60, timed = 0) => ({ name, w, notes, rest, timed });
-
-  // Jeder Slot enthält 4 Varianten, eine je Phase (Einstieg → Fundament → Aufbau → Kondition & Kraft)
-  const GOBLET = 'Kurzhantel mit beiden Händen vor der Brust halten, Ellbogen zeigen nach unten, Oberkörper aufrecht.';
-  const HIPTHRUST = 'Oberer Rücken auf Sofa oder Bank, Kurzhantel auf dem Becken. Oben 1 Sek. halten, Gesäß anspannen.';
-  const LUNGE_DB = 'Je Hand eine Kurzhantel (Gewicht gilt pro Hantel). Großer Schritt nach hinten, Wiederholungen pro Seite.';
-  const ROW_DB = 'Eine Hand und ein Knie auf Stuhl oder Sofa, Rücken gerade. Hantel zur Hüfte ziehen. Wiederholungen pro Seite.';
-  const ROW_BAND = 'Band an stabilem Punkt in Brusthöhe befestigen. Schulterblätter zusammenziehen, Ellbogen nah am Körper.';
-  const PRESS = 'Im Stehen oder Sitzen, Rippen unten lassen, nicht ins Hohlkreuz fallen.';
-  const STEPUP = 'Mit der ganzen Fußsohle auf die Stufe, kontrolliert wieder absteigen. Wiederholungen pro Seite.';
-  const HINGE = 'Rücken gerade, Gesäß nach hinten schieben, Knie leicht gebeugt. Hanteln eng an den Beinen entlang führen.';
-  const PLANK = 'Körper bildet eine Linie, Bauch fest, ruhig weiteratmen. Bei Bedarf auf die Knie absenken.';
-
-  const TRAINING = {
-    A: { name: 'Training A – Beine & Po', focus: 'Beine · Gesäß · Core', slots: [
-      [x('Kniebeuge zum Stuhl', 0, 'Setz dich kontrolliert auf den Stuhl und stehe ohne Schwung wieder auf. Knie zeigen Richtung Fußspitzen.'),
-       x('Kniebeuge', 0, 'Füße schulterbreit, Brust aufrecht, Gewicht auf dem ganzen Fuß. Nur so tief, wie es sich gut anfühlt.'),
-       x('Goblet Squat', 4, GOBLET, 75), x('Goblet Squat', 6, GOBLET, 75)],
-      [x('Glute Bridge', 0, 'Auf dem Rücken, Füße aufgestellt. Becken anheben, oben das Gesäß kurz anspannen.', 45),
-       x('Glute Bridge (Band über den Knien)', 0, 'Band leicht nach außen drücken, Becken kontrolliert heben und senken.', 45),
-       x('Hip Thrust (Kurzhantel)', 6, HIPTHRUST), x('Hip Thrust (Kurzhantel)', 8, HIPTHRUST)],
-      [x('Ausfallschritt rückwärts (mit Halt)', 0, 'Mit einer Hand an Wand oder Stuhl festhalten. Wiederholungen pro Seite.'),
-       x('Ausfallschritt rückwärts', 0, 'Großer Schritt nach hinten, Oberkörper aufrecht. Wiederholungen pro Seite.'),
-       x('Ausfallschritt rückwärts (Kurzhanteln)', 3, LUNGE_DB), x('Ausfallschritt rückwärts (Kurzhanteln)', 4, LUNGE_DB)],
-      [x('Wand-Liegestütze', 0, 'Abstand etwa eine Armlänge zur Wand. Ellbogen schräg nach hinten, Körper bleibt gerade.'),
-       x('Schräge Liegestütze (Hände erhöht)', 0, 'Hände auf Tisch oder Sofakante. Je flacher der Winkel, desto schwerer.'),
-       x('Schräge Liegestütze (niedrige Erhöhung)', 0, 'Hände auf einer Treppenstufe oder einem Kissenstapel.'),
-       x('Liegestütze auf Knien', 0, 'Körper bildet eine Linie von Knien bis Kopf. Brust kontrolliert Richtung Boden.')],
-      [x('Unterarmstütz auf Knien', 0, PLANK, 45, 15), x('Unterarmstütz (Plank)', 0, PLANK, 45, 15),
-       x('Unterarmstütz (Plank)', 0, PLANK, 45, 25), x('Unterarmstütz (Plank)', 0, PLANK, 45, 35)]
-    ]},
-    B: { name: 'Training B – Oberkörper & Core', focus: 'Rücken · Schultern · Arme · Core', slots: [
-      [x('Rudern mit Band', 0, ROW_BAND), x('Rudern mit Band', 0, ROW_BAND),
-       x('Einarmiges Rudern (Kurzhantel)', 4, ROW_DB), x('Einarmiges Rudern (Kurzhantel)', 5, ROW_DB)],
-      [x('Schulterdrücken (Kurzhanteln)', 2, PRESS), x('Schulterdrücken (Kurzhanteln)', 3, PRESS),
-       x('Schulterdrücken (Kurzhanteln)', 4, PRESS), x('Schulterdrücken (Kurzhanteln)', 5, PRESS)],
-      [x('Seitheben (Kurzhanteln)', 1, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
-       x('Seitheben (Kurzhanteln)', 2, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
-       x('Seitheben (Kurzhanteln)', 2, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.'),
-       x('Seitheben (Kurzhanteln)', 3, 'Arme leicht gebeugt bis auf Schulterhöhe anheben, ohne Schwung.')],
-      [x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
-       x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
-       x('Trizeps-Dips am Stuhl', 0, 'Knie gebeugt, Ellbogen zeigen nach hinten. Nur bis ca. 90° absenken.'),
-       x('Trizeps-Dips am Stuhl (Beine gestreckt)', 0, 'Fersen am Boden, Ellbogen nach hinten. Nur bis ca. 90° absenken.')],
-      [x('Bird Dog', 0, 'Auf allen Vieren gegenüberliegenden Arm und Bein strecken, Rücken ruhig. Wiederholungen pro Seite.', 45),
-       x('Dead Bug', 0, 'Rücken liegt am Boden, unterer Rücken bleibt in Kontakt. Wiederholungen pro Seite.', 45),
-       x('Dead Bug', 0, 'Rücken liegt am Boden, unterer Rücken bleibt in Kontakt. Wiederholungen pro Seite.', 45),
-       x('Fahrrad-Crunches', 0, 'Langsam und kontrolliert, Schultern nur leicht anheben. Wiederholungen pro Seite.', 45)]
-    ]},
-    C: { name: 'Training C – Ganzkörper-Kreislauf', focus: 'Ganzkörper · Kalorienverbrauch', slots: [
-      [x('Step-ups (Treppenstufe)', 0, STEPUP), x('Step-ups (Treppenstufe)', 0, STEPUP),
-       x('Step-ups mit Kurzhanteln', 3, STEPUP), x('Step-ups mit Kurzhanteln', 4, STEPUP)],
-      [x('Hüftbeuge mit Besenstiel', 0, 'Stab entlang der Wirbelsäule, Gesäß nach hinten schieben, Knie leicht gebeugt.'),
-       x('Rumänisches Kreuzheben (Kurzhanteln)', 3, HINGE), x('Rumänisches Kreuzheben (Kurzhanteln)', 5, HINGE),
-       x('Rumänisches Kreuzheben (Kurzhanteln)', 6, HINGE)],
-      [x('Brustpresse am Boden (Kurzhanteln)', 2, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
-       x('Brustpresse am Boden (Kurzhanteln)', 3, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
-       x('Brustpresse am Boden (Kurzhanteln)', 4, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.'),
-       x('Brustpresse am Boden (Kurzhanteln)', 5, 'Auf dem Rücken, Ellbogen berühren kurz den Boden, dann Hanteln nach oben drücken.')],
-      [x('Marschieren auf der Stelle', 0, 'Knie locker anheben, Arme mitschwingen, ruhig atmen.', 45, 30),
-       x('Low-Impact-Hampelmann', 0, 'Ohne Sprung: Beine abwechselnd seitlich antippen, Arme über den Kopf.', 45, 30),
-       x('Hampelmann', 0, 'Bei Gelenkbeschwerden die Low-Impact-Variante nutzen.', 45, 40),
-       x('Skater-Schritte', 0, 'Seitlich von Fuß zu Fuß schwingen, weich landen.', 45, 40)],
-      [x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
-       x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
-       x('Seitliches Beinheben', 0, 'In Seitenlage, Bein gestreckt anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45),
-       x('Seitliches Beinheben (Band)', 0, 'Band über den Knien. In Seitenlage Bein anheben, Hüfte bleibt stabil. Wiederholungen pro Seite.', 45)]
-    ]}
-  };
-
-  const WARMUP = { name: 'Aufwärmen', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null,
-    notes: 'Schultern und Hüfte kreisen, Arme schwingen, auf der Stelle marschieren, 5 lockere Kniebeugen.' };
-  const COOLDOWN = { name: 'Dehnen & Entspannen', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null,
-    notes: 'Beine, Hüfte, Brust und Rücken je 20–30 Sek. dehnen und ruhig weiteratmen.' };
-
-  // Phasen. Die letzte Woche der ersten drei Phasen ist eine Erholungswoche (weniger Sätze).
-  const PHASES = [
-    { name: 'Einstieg', focus: 'Bewegungen sicher lernen und eine Routine aufbauen', rpe: 5, deload: true,
-      sets: [2, 2, 2, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 4, min: [2, 2, 2, 3, 3, 3] },
-      titles: ['Ankommen', 'Technik lernen', 'Mehr Wiederholungen', 'Dritter Satz', 'Sicherer werden', 'Routine festigen', 'Erholungswoche'] },
-    { name: 'Fundament', focus: 'Kondition und Kraftausdauer verbessern', rpe: 6, deload: true,
-      sets: [3, 3, 3, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 4, min: [3, 3, 3, 4, 4, 4] },
-      titles: ['Neue Übungsvarianten', 'Stabil werden', 'Mehr Ausdauer', 'Wiederholungen steigern', 'Kraftausdauer', 'Stark durchhalten', 'Erholungswoche'] },
-    { name: 'Aufbau', focus: 'Mit leichten Kurzhanteln stärker werden', rpe: 6.5, deload: true,
-      sets: [3, 3, 3, 3, 3, 3], reps: [8, 10, 12, 8, 10, 12], walk: { sets: 5, min: [3, 3, 3, 4, 4, 4] },
-      titles: ['Mit Hanteln starten', 'Gewichte spüren', 'Kontrolle & Tempo', 'Mehr Wiederholungen', 'Stärker werden', 'Kraft festigen', 'Erholungswoche'] },
-    { name: 'Kondition & Kraft', focus: 'Fitter, stärker und ausdauernder', rpe: 7, deload: false,
-      sets: [3, 3, 3, 3, 3], reps: [10, 12, 12, 10, 12], walk: { sets: 5, min: [4, 4, 5, 5, 5] },
-      titles: ['Neue Herausforderung', 'Ausdauer ausbauen', 'Wiederholungen steigern', 'Fit in den Endspurt', 'Abschluss & Rückblick'] }
+  // Phase je Woche (0 = Einstieg, 1 = Aufbau, 2 = Kraft & Lauf, 3 = Sommerform) – Erholungswochen gehören zur Phase davor
+  const phaseIdx = w => w <= 7 ? 0 : w <= 14 ? 1 : w <= 21 ? 2 : 3;
+  const PHASE_NAMES = ['Phase 1 · Einstieg', 'Phase 2 · Aufbau', 'Phase 3 · Kraft & Lauf', 'Phase 4 · Sommerform'];
+  const PHASE_FOCUS = [
+    'Technik lernen, Routine aufbauen, Gelenke an Belastung gewöhnen',
+    '3 Sätze, mehr Gewicht, längere Laufabschnitte',
+    'Schwerere Gewichte, Langhantel, Vorbereitung Wings for Life',
+    'Kraft halten und steigern, Bergwandern für die Giglachseen'
   ];
 
-  const strength = (tpl, level, c) => {
-    let seconds = 0;
-    const main = tpl.slots.map(variants => {
-      const e = variants[level], timed = e.timed > 0;
-      const reps = timed ? Math.min(60, e.timed + 5 * c.k) : c.reps;
-      seconds += c.sets * ((timed ? reps : reps * 4) + 15 + e.rest);
-      return { name: e.name, sets: c.sets, reps, unit: timed ? 'Sek' : 'Wdh.', weight: e.w, rest: e.rest, rpe: c.rpe, notes: e.notes };
-    });
-    return { name: tpl.name, focus: tpl.focus, duration: Math.round((10 + seconds / 60) / 5) * 5, exercises: [WARMUP, ...main, COOLDOWN] };
+  // Sätze × Wdh, Pause, RPE und Hinweis je Woche (gilt für Übungen 1–4 beider Krafteinheiten)
+  const WEEK = [null,
+    [2, 10, 60, 5, 'Nur Technik, leichtes Gewicht'], [2, 12, 60, 6, ''], [3, 10, 60, 6, 'Dritter Satz kommt dazu'],
+    [3, 12, 60, 6, ''], [3, 12, 60, 7, 'Gewicht leicht steigern'], [3, 12, 60, 7, ''], [2, 10, 60, 6, 'Erholungswoche + Test'],
+    [3, 10, 75, 7, 'Neue Varianten, mehr Gewicht'], [3, 12, 75, 7, ''], [3, 10, 75, 7, 'Gewicht steigern'], [3, 12, 75, 7, ''],
+    [3, 10, 75, 8, 'Gewicht steigern'], [3, 12, 75, 8, ''], [2, 10, 60, 6, 'Erholungswoche + Test'],
+    [3, 10, 90, 7, 'Langhantel-Start, leicht beginnen'], [3, 8, 90, 7, ''], [3, 10, 90, 8, ''], [4, 8, 90, 8, 'Stärkste Kraftwoche'],
+    [3, 8, 90, 7, 'Laufen hat Vorrang'], [2, 8, 90, 6, 'Lauf-Woche: nur 1 Kraft-Einheit, leicht'], [2, 10, 60, 6, 'Erholungswoche + Test'],
+    [3, 10, 90, 7, ''], [3, 8, 90, 8, ''], [4, 8, 90, 8, ''], [3, 10, 90, 8, ''], [2, 8, 90, 6, 'Abschluss-Test']
+  ];
+  const TITLES = [null,
+    'Kennenlernen', 'Technik festigen', 'Dritter Satz', 'Mehr Wiederholungen', 'Gewicht steigern', 'Routine festigen', 'Erholung & Test',
+    'Neue Varianten', 'Stabil werden', 'Stärker werden', 'Ausdauer ausbauen', 'Mehr Gewicht', 'Kraft festigen', 'Erholung & Test',
+    'Langhantel-Start', 'Länger laufen', 'Fordernd & sauber', 'Stärkste Kraftwoche', 'Laufen hat Vorrang', 'Wings for Life', 'Erholung & Test',
+    'Sommerform', 'Bergwandern', 'Kraft steigern', 'Endspurt', 'Abschluss-Test'
+  ];
+
+  // Gewichte trägt Margit im Training selbst ein. Der Plan gibt nur Startgewicht-Vorschläge (Kurzhanteln: pro Hantel).
+  // wkey = gemeinsamer Schlüssel, über den das zuletzt eingetragene Gewicht in die nächsten Einheiten übernommen wird.
+  const W = (wkey, hint) => ({ wkey, hint });
+  const BW = { bw: true };
+
+  const D = {
+    squatBank: 'Füße schulterbreit, Gesäß nach hinten zur Bank absenken, kurz antippen (nicht absitzen), aufstehen. Knie zeigen in Richtung Fußspitzen.',
+    goblet: 'Wie die Kniebeuge zur Bank, eine Kurzhantel senkrecht vor der Brust halten, Ellbogen zeigen nach unten.',
+    hip: 'Oberer Rücken an der Längsseite der Bank, Füße aufgestellt. Gewicht auf dem Becken (bei Langhantel ein Polster drunter). Becken hochdrücken, oben 1 s Po anspannen. Kinn leicht zur Brust.',
+    row: 'Eine Hand und ein Knie auf der Bank, Rücken gerade. Hantel zur Hüfte ziehen, Schulterblatt nach hinten-unten. Wiederholungen pro Seite.',
+    step: 'Ganze Fußsohle auf die Stufe, über das vordere Bein hochdrücken, kontrolliert absteigen. Wiederholungen pro Seite. Bei Bedarf an der Wand festhalten.',
+    pallof: 'Seitlich zum Kabelturm (oder Band) stehen, Griff vor der Brust. Arme gerade nach vorne drücken, 2 s halten, zurück. Der Rumpf darf sich nicht verdrehen. Wiederholungen pro Seite.',
+    rdl: 'Hanteln vor den Oberschenkeln, Knie leicht gebeugt. Gesäß nach hinten schieben, Hanteln eng an den Beinen bis knapp unter die Knie führen, Rücken bleibt gerade. Hochkommen durch Po-Anspannung.',
+    bench: 'Rücken auf der Bank, Füße am Boden. Hanteln über der Brust, kontrolliert senken bis die Ellbogen etwas unter der Bank sind, hochdrücken.',
+    lat: 'Stange schulterbreit greifen, Brust raus, Stange zum oberen Brustbein ziehen – nie hinter den Nacken. Ohne Kabelturm: Band oben befestigen (Türanker), im Kniestand nach unten zur Brust ziehen.',
+    face: 'Seil oder Band auf Gesichtshöhe. Zum Gesicht ziehen, Ellbogen hoch und nach außen, Schulterblätter zusammen. Sehr gut für Schultern und Haltung.',
+    farmer: 'Je Hand eine schwere Hantel, aufrecht und mit festem Bauch gehen. Trainiert Griff, Rumpf und Tragen im Alltag.',
+    deadbug: 'Rückenlage, Arme zur Decke, Beine angewinkelt in der Luft. Gegenüberliegenden Arm und Bein langsam strecken, unterer Rücken bleibt am Boden. Kopf liegt ab. Wiederholungen pro Seite.'
   };
 
-  const walkIntervals = (sets, min) => ({
-    name: 'Cardio – Zügiges Walken', focus: 'Ausdauer · Fettverbrennung',
-    duration: Math.round((10 + sets * (min + 1.5)) / 5) * 5,
-    description: 'Am besten draußen: zwischen den zügigen Abschnitten gehst du locker weiter. Du solltest dich dabei nie völlig ausgepowert fühlen.',
+  const STAND_UP = [null,
+    'Vom Boden zur Bank aufsetzen, beide Hände auf der Bank',
+    'Vom Boden zur Bank aufsetzen, nur eine Hand auf der Bank',
+    'Aus dem Kniestand aufstehen, eine Hand am Knie',
+    'Aus dem Kniestand aufstehen ohne Hände',
+    'Aus dem Sitz am Boden aufstehen, eine Hand am Boden',
+    'Aus dem Sitz am Boden aufstehen ohne Hände'
+  ];
+  const standStage = w => w >= 22 ? 6 : w >= 17 ? 5 : w >= 13 ? 4 : w >= 9 ? 3 : w >= 5 ? 2 : 1;
+
+  // Rumpfübungen (Pallof Press, Dead Bug)
+  const core = w => w <= 7 ? [2, 8] : w <= 13 ? [3, 10] : w === 14 ? [2, 10] : w === 21 ? [2, 12] : [3, 12];
+
+  const WARMUP = {
+    name: 'Aufwärmen', sets: 1, reps: 6, unit: 'Min', rest: 0, fixed: true, display: '5–7 Min',
+    notes: '2 Min zügig auf der Stelle marschieren, Arme mitschwingen · Schulterkreisen rückwärts 10× · Hüftkreisen je Seite 10× · Katze-Kuh 8× · 8 Kniebeugen zur Bank ohne Gewicht · 10 Band-Zieher vor der Brust (Band Pull-Apart)'
+  };
+  const MOBILITY_NOTES = 'Katze-Kuh 8× · Kind-Position 30 s · „Buch öffnen“ je Seite 8× · Hüftbeuger-Dehnung im Halbknien je Seite 30 s · Wand-Engel 8× · Wadendehnung je Seite 30 s · Nacken sanft zur Seite neigen je Seite 3× 5 s. Ruhig atmen, nichts erzwingen.';
+  const MOBILITY = { name: 'Beweglichkeits-Routine', sets: 1, reps: 10, unit: 'Min', rest: 0, fixed: true, notes: MOBILITY_NOTES };
+  const FINISHERS = [
+    { name: 'Finisher: Box-Runde (Piloxing-Stil)', notes: '6 × (30 s Schattenboxen – Gerade, Haken, Uppercut – 30 s locker). Füße bleiben am Boden, Arme nicht ganz durchstrecken.' },
+    { name: 'Finisher: Tragen & Gehen', notes: "3 Runden: Farmer's Walk + 10 Step-ups." },
+    { name: 'Finisher: Band-Zirkel', notes: '3 Runden: 12 Band Pull-Apart, 12 seitliche Schritte mit Band über den Knien, 10 Glute Bridges.' },
+    { name: 'Finisher: Tanz', notes: '1–2 Lieblingslieder durchtanzen – ohne Sprünge.' }
+  ].map(f => ({ ...f, sets: 1, reps: 6, unit: 'Min', rest: 0, fixed: true, display: '5–8 Min' }));
+
+  const TESTS_STRENGTH = [
+    { name: 'Test: Aufstehen vom Stuhl', sets: 1, reps: 30, unit: 'Sek', rest: 60, fixed: true, notes: 'Wie oft schaffst du es in 30 Sekunden, ohne Hände? Ergebnis unter „Fortschritt“ eintragen.' },
+    { name: 'Test: Aufstehen vom Boden', sets: 1, reps: 1, rest: 60, fixed: true, display: 'Stufe 1–6', notes: 'Welche Stufe des Aufstehen-Trainings schaffst du? Ergebnis unter „Fortschritt“ eintragen.' },
+    { name: 'Test: Unterarmstütz auf den Knien', sets: 1, reps: 1, rest: 60, fixed: true, display: 'max. Sekunden', notes: 'Wie viele Sekunden mit sauberer Haltung? Ergebnis unter „Fortschritt“ eintragen.' },
+    { name: 'Test: Goblet Squat', sets: 1, reps: 10, rest: 90, fixed: true, display: '10 saubere Wdh.', notes: 'Mit welchem Gewicht schaffst du 10 saubere Wiederholungen? Langsam steigern, nicht ans Limit gehen.' }
+  ];
+  const TEST_RUN = { name: 'Test: 3 km Lauf-Geh auf Zeit', sets: 1, reps: 3, unit: 'km', rest: 0, fixed: true,
+    notes: 'Flache Strecke, gleiches Prinzip wie im Training (joggen und gehen). Zeit stoppen und unter „Fortschritt“ eintragen.' };
+
+  const main = (w, sets, reps, rest, rpe) => ({ sets, reps, rest, rpe });
+
+  function strengthDay(kind, w) {
+    const [sets, reps, rest, rpe, hint] = WEEK[w];
+    const p = phaseIdx(w), i = w - 1;
+    const [cs, cr] = core(w);
+    const recovery = RECOVERY_WEEKS.includes(w) || w === 20;
+    const base = main(w, sets, reps, rest, rpe);
+    let exercises;
+    if (kind === 'A') {
+      exercises = [
+        { key: 'squat', name: ['Kniebeuge zur Bank', 'Goblet Squat zur Bank', 'Goblet Squat (Bank tiefer)', 'Goblet Squat frei'][p], ...base, ...(p === 0 ? BW : W('squat', '6–8 kg')), notes: p === 0 ? D.squatBank : D.goblet },
+        { key: 'hip', name: p < 2 ? 'Hip Thrust an der Hantelbank' : 'Hip Thrust mit Langhantel', ...base, ...(p < 2 ? W('hip-db', '8–10 kg') : W('hip-bb', 'Langhantel leicht beginnen')), notes: (p === 0 ? 'Erst mit Körpergewicht, dann mit Kurzhantel. ' : '') + D.hip },
+        { key: 'row', name: 'Einarmiges Rudern an der Bank', ...base, ...W('row', '6–8 kg'), suffix: 'je Seite', notes: D.row },
+        { key: 'step', name: ['Step-up (niedrige Stufe, 15–20 cm)', 'Step-up mit Kurzhanteln', 'Step-up (höhere Stufe, 25–30 cm)', 'Step-up mit Kurzhanteln (höhere Stufe)'][p], ...base, ...(p % 2 === 0 ? BW : W('step', '2 × 3 kg')), suffix: 'je Seite', notes: D.step },
+        { key: 'pallof', name: 'Pallof Press (Kabel oder Band)', sets: cs, reps: cr, rest: 45, rpe: null, ...W('pallof', 'leicht'), suffix: 'je Seite', notes: D.pallof },
+        { key: 'stand', name: `Aufstehen-Training · Stufe ${standStage(w)}`, sets: 1, reps: 5, rest: 0, rpe: null, fixed: true, display: '3–5 Wdh.',
+          notes: `${STAND_UP[standStage(w)]}. Langsam und kontrolliert. Erst zur nächsten Stufe, wenn die aktuelle sicher klappt. Bei Knieschmerzen: Kissen unter das Knie, Stufe zurück.` }
+      ];
+    } else {
+      const dist = [20, 30, 30, 40][p];
+      exercises = [
+        { key: 'rdl', name: p < 2 ? 'Rumänisches Kreuzheben (Kurzhanteln)' : 'Rumänisches Kreuzheben (Langhantel)', ...base, ...(p < 2 ? W('rdl-db', '2 × 6–8 kg') : W('rdl-bb', 'Langhantel leicht beginnen')), notes: D.rdl },
+        { key: 'bench', name: p < 2 ? 'Brustpresse flach (Kurzhanteln)' : 'Brustpresse schräg (Kurzhanteln)', ...base, ...W('bench', '2 × 4–5 kg'), notes: (p >= 2 ? 'Bank leicht aufgestellt. ' : '') + D.bench },
+        { key: 'lat', name: 'Latzug am Kabelturm', ...base, ...W('lat', '15–20 kg'), notes: D.lat },
+        { key: 'face', name: 'Face Pull (Kabel oder Band)', ...base, ...W('face', 'leicht'), notes: D.face },
+        { key: 'farmer', name: "Farmer's Walk", sets: recovery ? 3 : 4, reps: dist, unit: 'm', rest: 60, rpe: null, ...W('farmer', '2 × 8–10 kg'), notes: D.farmer + (p === 2 ? ' Diese Phase etwas schwerer.' : '') },
+        { key: 'deadbug', name: 'Dead Bug', sets: cs, reps: cr, rest: 45, rpe: null, fixed: true, suffix: 'je Seite', notes: D.deadbug }
+      ];
+    }
+    // Finisher wechselt jede Woche (abwechselnd A/B); in Erholungswochen und der Lauf-Woche: Beweglichkeit
+    const finisher = recovery ? MOBILITY : FINISHERS[(2 * w + (kind === 'B' ? 1 : 0)) % FINISHERS.length];
+    const test = kind === 'A' && TEST_WEEKS.includes(w);
+    return {
+      type: 'training',
+      name: kind === 'A' ? 'Kraft A – Beine & Po' : 'Kraft B – Oberkörper & Haltung',
+      focus: kind === 'A' ? 'Ganzkörper · Fokus Beine & Po' : 'Ganzkörper · Fokus Oberkörper & Haltung',
+      duration: (recovery || w === 1 ? 35 : 45) + (test ? 10 : 0),
+      description: [hint, test ? (w === 26 ? 'Abschluss-Test: Tests am Ende durchführen und mit Woche 1 vergleichen.' : 'Test-Woche: die Tests am Ende durchführen.') : ''].filter(Boolean).join(' · '),
+      exercises: [WARMUP, ...exercises, finisher, ...(test ? TESTS_STRENGTH : [])]
+    };
+  }
+
+  // Lauf-Geh-Training: [Wiederholungen, Joggen (Min), Gehen (s)]
+  const RUN = { 2: [8, 1, 120], 3: [8, 1, 90], 4: [7, 1.5, 90], 5: [6, 2, 90], 6: [6, 2, 60], 7: [5, 2, 90], 8: [5, 3, 90], 9: [5, 3, 60],
+    10: [4, 4, 60], 11: [4, 5, 90], 12: [4, 5, 60], 13: [3, 7, 90], 14: [3, 5, 90], 15: [3, 8, 90], 16: [3, 10, 90], 17: [2, 15, 120],
+    18: [6, 5, 120], 19: [3, 10, 90], 22: [4, 8, 60], 23: [4, 8, 60], 24: [4, 8, 60], 25: [4, 8, 60], 26: [4, 8, 60] };
+  const RUN_WARM = { name: 'Einlaufen: zügig gehen', sets: 1, reps: 5, unit: 'Min', rest: 0, fixed: true, notes: 'Am besten auf weichem Untergrund (Au, Ennsradweg).' };
+  const RUN_COOL = { name: 'Auslaufen: locker gehen', sets: 1, reps: 5, unit: 'Min', rest: 0, fixed: true, notes: 'Tempo langsam reduzieren, danach gern kurz die Waden dehnen.' };
+
+  function runDay(w) {
+    let mainEx, total;
+    if (w === 20) {
+      mainEx = { name: 'Lockerer Lauf (Plaudertempo)', sets: 1, reps: 20, unit: 'Min', rest: 0, rpe: 4, fixed: true, notes: 'Lauf-Woche: ganz locker, nur die Beine bewegen. Kräfte sparen für Samstag.' };
+      total = 20;
+    } else if (w === 21) {
+      mainEx = { name: 'Zügig gehen', sets: 1, reps: 30, unit: 'Min', rest: 0, rpe: 4, fixed: true, notes: 'Nach dem Lauf: nur zügig gehen, kein Joggen.' };
+      total = 30;
+    } else {
+      const [n, jog, walk] = RUN[w];
+      mainEx = {
+        name: w === 18 ? 'Etwas zügiger joggen' : 'Joggen im Plaudertempo', sets: n, reps: jog, unit: 'Min', rest: walk, restLabel: 'Gehpause', rpe: w === 18 ? 6 : 5, fixed: true,
+        notes: (w >= 22 ? '30–40 Min Lauf-Geh nach Gefühl, z. B. so. ' : '') + 'Joggen heißt: so langsam, dass du noch reden kannst. In der Gehpause zügig weitergehen – nach jedem Abschnitt startet der Timer für die Gehpause.'
+      };
+      total = n * (jog + walk / 60);
+    }
+    const test = TEST_WEEKS.includes(w) && w !== 1;
+    return {
+      type: 'training', name: 'Lauf-Geh-Training', focus: 'Joggen & Gehen im Wechsel',
+      duration: Math.round((10 + total) / 5) * 5,
+      description: 'Gehpausen sind kein Schummeln, sondern Teil der Methode. Wenn eine Woche zu schwer war: einfach wiederholen.' + (test ? ' Test-Woche: 3-km-Test statt oder nach dem Hauptteil.' : ''),
+      exercises: [RUN_WARM, mainEx, RUN_COOL, ...(test ? [TEST_RUN] : [])]
+    };
+  }
+
+  // Ausdauer lang (Samstag): hike = Wanderung, long = langer Lauf-Geh, berg = Bergwanderung, wfl = Wings for Life
+  const LONG = [null,
+    ['hike', 60], ['hike', 60], ['hike', 70], ['long', 40, '1 Min joggen / 2 Min gehen', 'Min'], ['hike', 80, 'Damberg'],
+    ['long', 45, '2 Min joggen / 1:30 gehen', 'Min'], ['hike', 60, 'locker'], ['hike', 90, 'Damberg'], ['long', 5, '3 Min joggen / 1:30 gehen'],
+    ['hike', 100], ['long', 6, '4 Min joggen / 1 Min gehen'], ['hike', 120, 'Damberg zweimal hinauf'], ['long', 7, '5 Min joggen / 1 Min gehen'],
+    ['hike', 60, 'locker'], ['long', 7, '6 Min joggen / 1 Min gehen'], ['hike', 120], ['long', 8.5, '7 Min joggen / 1 Min gehen', 'km', '8–9 km'],
+    ['long', 10, '8 Min joggen / 1 Min gehen', 'km', '10 km – Generalprobe'], ['long', 6, '8 Min joggen / 1 Min gehen'], ['wfl', 10],
+    ['hike', 60, 'locker'], ['berg', 150, '2–3 h · 400–500 Hm'], ['long', 7, 'nach Gefühl', 'km', '6–8 km'], ['berg', 210, '3–4 h · 600 Hm'],
+    ['long', 7, 'nach Gefühl', 'km', '6–8 km'], ['berg', 270, '4–5 h · 700+ Hm']
+  ];
+
+  function longDay(w) {
+    const [kind, amount, extra, unit, display] = LONG[w];
+    if (kind === 'wfl') return {
+      type: 'training', name: 'Wings for Life World Run', focus: 'Etappenziel · 10 km', duration: 75,
+      description: 'Genaues Datum folgt – Tag bei Bedarf tauschen. Das Catcher Car startet 30 Minuten nach dem Start. Für 10 km brauchst du ungefähr einen Schnitt von 7 Min pro km, inklusive Gehpausen. Ein ehrgeiziges Ziel – jeder Kilometer ist ein Erfolg!',
+      exercises: [{ name: 'Wings for Life World Run', sets: 1, reps: 10, unit: 'km', rest: 0, fixed: true, notes: 'Langsam starten, Lauf-Geh wie im Training (8 Min joggen / 1 Min gehen). Gehpausen sind erlaubt.' }]
+    };
+    if (kind === 'long') {
+      const isKm = (unit || 'km') === 'km';
+      return {
+        type: 'training', name: 'Ausdauer lang – Langer Lauf-Geh', focus: extra, duration: isKm ? Math.round(amount * 8.5 / 5) * 5 : amount,
+        description: 'Joggen im Plaudertempo, Gehpausen gehören dazu. Gern mit deiner Freundin.' + (w === 18 ? ' Die Generalprobe zeigt, wo du für den Wings for Life stehst.' : ''),
+        exercises: [{ name: `Langer Lauf-Geh: ${extra}`, sets: 1, reps: amount, unit: unit || 'km', rest: 0, fixed: true, display: display || null,
+          notes: 'Plaudertempo: Du kannst dich in ganzen Sätzen unterhalten. Wasser mitnehmen.' }]
+      };
+    }
+    const berg = kind === 'berg';
+    return {
+      type: 'training', name: berg ? 'Ausdauer lang – Bergwanderung' : 'Ausdauer lang – Wanderung',
+      focus: berg ? (w === 26 ? 'Generalprobe für die Giglachseen' : 'Training für die Giglachseen') : (extra === 'Damberg' || extra === 'Damberg zweimal hinauf' ? `Mit Höhenmetern · ${extra}` : extra === 'locker' ? 'Lockere Wanderung' : 'Mit Höhenmetern, z. B. Damberg'),
+      duration: amount,
+      description: berg ? 'Gute Schuhe, Wasser, Jause und Regenjacke einpacken. Bergab langsam gehen – das schont die Knie.' : 'Gern mit Höhenmetern (z. B. Damberg) und mit deiner Freundin. Bequeme Schuhe, Wasser mitnehmen.',
+      exercises: [{ name: berg ? 'Bergwanderung' : extra === 'locker' ? 'Lockere Wanderung' : 'Wanderung', sets: 1, reps: amount, unit: 'Min', rest: 0, fixed: true,
+        display: berg ? extra : null, notes: 'Plaudertempo, Pausen sind erlaubt.' + (w === 1 ? ' Optional: unterwegs 3 km auf flacher Strecke stoppen – als Ausgangswert für den 3-km-Test.' : '') }]
+    };
+  }
+
+  const mobilityDay = w => ({
+    type: 'recovery', name: 'Tägliche Runde + Beweglichkeit', focus: 'Gehen · Beweglichkeit (optional)', duration: 10,
+    description: 'Deine tägliche Runde (mind. 30 Min gehen) bleibt – sie ist der wichtigste Baustein fürs Abnehmen. Dazu optional 10 Min Beweglichkeit.',
     exercises: [
-      { name: 'Einlaufen (lockeres Gehen)', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null, notes: 'Locker losgehen, Schultern entspannen, Arme mitschwingen.' },
-      { name: 'Zügiges Walken (Intervalle)', sets, reps: min, unit: 'Min', weight: 0, rest: 90, rpe: 6,
-        notes: 'Zügig = Atmung deutlich schneller, du kannst aber noch in kurzen Sätzen sprechen. In der Pause locker weitergehen.' },
-      { name: 'Auslaufen (lockeres Gehen)', sets: 1, reps: 5, unit: 'Min', weight: 0, rest: 0, rpe: null, notes: 'Tempo langsam reduzieren, danach kurz dehnen.' }
+      { name: 'Tägliche Runde', sets: 1, reps: 30, unit: 'Min', rest: 0, fixed: true, display: 'mind. 30 Min', notes: 'Zügig gehen, wie bisher.' },
+      { name: 'Katze-Kuh', sets: 1, reps: 8, rest: 0, fixed: true, notes: 'Auf allen Vieren Rücken langsam rund machen und wieder durchhängen lassen.' },
+      { name: 'Kind-Position mit Armen nach vorne', sets: 1, reps: 30, unit: 'Sek', rest: 0, fixed: true, notes: 'Gesäß Richtung Fersen, Arme lang nach vorne, ruhig atmen.' },
+      { name: '„Buch öffnen“ (Brustwirbelsäulen-Rotation)', sets: 1, reps: 8, rest: 0, fixed: true, suffix: 'je Seite', notes: 'In Seitenlage, Knie angewinkelt. Oberen Arm wie eine Buchseite nach hinten öffnen, Blick folgt der Hand.' },
+      { name: 'Hüftbeuger-Dehnung im Halbknien', sets: 1, reps: 30, unit: 'Sek', rest: 0, fixed: true, suffix: 'je Seite', notes: 'Kissen unters Knie. Becken leicht nach vorne schieben, Po anspannen.' },
+      { name: 'Wand-Engel', sets: 1, reps: 8, rest: 0, fixed: true, notes: 'Rücken an der Wand, Arme hochschieben – nur so weit wie schmerzfrei.' },
+      { name: 'Wadendehnung an der Wand', sets: 1, reps: 30, unit: 'Sek', rest: 0, fixed: true, suffix: 'je Seite', notes: 'Hinteres Bein gestreckt, Ferse bleibt am Boden.' },
+      { name: 'Nacken sanft dehnen', sets: 1, reps: 3, rest: 0, fixed: true, suffix: 'je Seite', notes: 'Kopf langsam zur Seite neigen, 5 s halten – sanft, ohne Druck mit der Hand.' }
     ]
   });
 
-  const longWalk = min => ({
-    name: 'Wanderung / langer Spaziergang', focus: 'Natur · Grundlagenausdauer', duration: min,
-    description: 'Raus in die Natur: Wald, Park oder eine Wanderung. Gern mit Hügeln oder Treppen. Wasser mitnehmen und bequeme Schuhe tragen.',
-    exercises: [{ name: 'Dauerwalken im Plaudertempo', sets: 1, reps: min, unit: 'Min', weight: 0, rest: 0, rpe: 4,
-      notes: 'Plaudertempo: Du kannst dich dabei noch gut unterhalten. Pausen sind erlaubt.' }]
+  const funDay = () => ({
+    type: 'optional', name: 'Spaß-Einheit (optional)', focus: 'Bonus, gern mit deiner Freundin', duration: 40,
+    description: 'Zählt als Bonus, nicht als Pflicht.',
+    exercises: [{ name: 'Spaß-Einheit nach Wahl', sets: 1, reps: 40, unit: 'Min', rest: 0, fixed: true, display: '30–45 Min',
+      notes: 'Schwimmen (ruhig, Brust oder Kraul) · Tanzen / Zumba / Piloxing / TaeBo – Sprünge durch Schritte ersetzen · Radfahren am Ennsradweg, sobald das Wetter passt.' }]
+  });
+
+  const restDay = (w, text) => ({
+    type: 'rest', name: 'Ruhetag',
+    description: text || (w === 26 ? 'Geschafft! Vergleiche deine Testergebnisse mit Woche 1 – und dann ab zu den Giglachseen. Glückwunsch!' : 'Ruhetag – Spazieren ist erlaubt. Schlaf, ausgewogene Ernährung und genug Wasser unterstützen deinen Fortschritt.')
   });
 
   const plan = [];
-  let w = 0;
-  PHASES.forEach((ph, level) => {
-    ph.titles.forEach((title, k) => {
-      const deload = ph.deload && k === ph.titles.length - 1;
-      const c = deload ? { sets: 2, reps: 10, rpe: 5, k: 0 } : { sets: ph.sets[k], reps: ph.reps[k], rpe: ph.rpe + (k >= 3 ? 0.5 : 0), k };
-      const walkSets = deload ? ph.walk.sets - 1 : ph.walk.sets;
-      const walkMin = deload ? ph.walk.min[0] : ph.walk.min[k];
-      const longMin = deload ? 30 : Math.min(75, Math.round((30 + 2 * w) / 5) * 5);
-      const last = w === 25;
-
-      const days = [
-        { day: 'Montag',     type: 'training', ...strength(TRAINING.A, level, c) },
-        { day: 'Dienstag',   type: 'optional', ...walkIntervals(walkSets, walkMin) },
-        { day: 'Mittwoch',   type: 'training', ...strength(TRAINING.B, level, c) },
-        { day: 'Donnerstag', type: 'recovery', name: 'Aktive Erholung', focus: 'Mobilität · Entspannung', duration: 15,
-          description: '10–15 Minuten sanfte Mobilisation für Nacken, Schultern, Hüfte und Rücken – oder ein lockerer Spaziergang. Viel trinken und früh schlafen gehen.' },
-        { day: 'Freitag',    type: 'training', ...strength(w === 0 ? TRAINING.A : TRAINING.C, level, c) },
-        { day: 'Samstag',    type: 'optional', ...longWalk(longMin) },
-        { day: 'Sonntag',    type: 'rest',     name: 'Ruhetag',
-          description: last ? 'Geschafft! Schau auf die 26 Wochen zurück: Wie fühlst du dich, was fällt dir leichter als am Anfang? Glückwunsch!'
-            : 'Kompletter Ruhetag. Schlaf, ausgewogene Ernährung und genug Wasser unterstützen deinen Fortschritt.' }
+  for (let w = 1; w <= 26; w++) {
+    const p = phaseIdx(w), rec = RECOVERY_WEEKS.includes(w);
+    let days;
+    if (w === 1) {
+      // Woche 1 ist kurz (Fr–So) und dient zum Kennenlernen
+      days = [
+        { day: 'Freitag', ...strengthDay('A', 1) },
+        { day: 'Samstag', ...longDay(1) },
+        { day: 'Sonntag', ...restDay(1) }
       ];
-
-      plan.push({
-        title, phase: ph.name,
-        focus: deload ? 'Weniger Sätze – dein Körper wird in der Erholung stärker' : ph.focus,
-        days: w === 0 ? days.filter(d => DAYS.indexOf(d.day) >= FIRST_DAY) : days
-      });
-      w++;
+    } else if (w === 20) {
+      // Lauf-Woche: nur 1 Kraft-Einheit, leicht
+      days = [
+        { day: 'Montag', ...strengthDay('A', 20) },
+        { day: 'Dienstag', ...runDay(20) },
+        { day: 'Mittwoch', ...mobilityDay(20) },
+        { day: 'Donnerstag', type: 'recovery', name: 'Tägliche Runde', focus: 'Lauf-Woche · kein Krafttraining', duration: 30,
+          description: 'Diese Woche kein zweites Krafttraining – die Beine sollen frisch sein. Nur die tägliche Runde.' },
+        { day: 'Freitag', ...restDay(20, 'Tag vor dem Lauf: ausruhen, gut essen und trinken, Startunterlagen und Kleidung herrichten.') },
+        { day: 'Samstag', ...longDay(20) },
+        { day: 'Sonntag', ...restDay(20, 'Erholung nach dem Lauf. Glückwunsch – egal wie weit du gekommen bist!') }
+      ];
+    } else {
+      days = [
+        { day: 'Montag', ...strengthDay('A', w) },
+        { day: 'Dienstag', ...runDay(w) },
+        { day: 'Mittwoch', ...mobilityDay(w) },
+        { day: 'Donnerstag', ...strengthDay('B', w) },
+        { day: 'Freitag', ...funDay() },
+        { day: 'Samstag', ...longDay(w) },
+        { day: 'Sonntag', ...restDay(w) }
+      ];
+    }
+    plan.push({
+      title: TITLES[w],
+      phase: rec ? 'Erholungswoche' : PHASE_NAMES[p],
+      focus: rec ? 'Weniger Sätze, Test – in der Erholung wirst du stärker' : (WEEK[w][4] || PHASE_FOCUS[p]),
+      test: TEST_WEEKS.includes(w),
+      days: days.sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day))
     });
-  });
+  }
   return plan;
 }
 
@@ -1215,6 +1375,12 @@ const fmtDate = (d, opts = { day: '2-digit', month: '2-digit' }) => d.toLocaleDa
 const fmtLong = d => d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 const fmtTime = s => { s = Math.max(0, Math.ceil(s)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 const fmtWeight = w => w ? `${num(w, 2)} ${PLAN_CONFIG.weightUnit}` : 'Körpergew.';
+const fmtLoad = ex => ex.weight ? fmtWeight(ex.weight) : (ex.load || 'Körpergew.');
+const fmtRest = ex => {
+  const s = ex.rest || 0;
+  if (!ex.restLabel || s < 60) return `${s}s`;
+  return s % 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} Min` : `${s / 60} Min`;
+};
 
 function relDay(d) {
   const n = diffDays(TODAY, d);
@@ -1297,6 +1463,8 @@ function freshState() {
     days: {},        // { [dayId]: { completed, completedAt } }
     exercises: {},   // { [exId]:  { done, setsDone } }
     settings: { sound: true, weights: {} },   // weights: { [Übungsname]: { weight, bodyweight } }
+    measure: {},     // { [Wochenindex]: { weight, waist, hip } }
+    tests: {},       // { [Testwoche]: { chair, floor, plank, run, goblet } }
     meta: {}
   };
 }
@@ -1306,7 +1474,9 @@ function loadState() {
     if (!raw) return freshState();
     const s = JSON.parse(raw);
     const base = freshState();
-    return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) }, meta: s.meta || {} };
+    const obj = v => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+    return { ...base, ...s, days: obj(s.days), exercises: obj(s.exercises), measure: obj(s.measure), tests: obj(s.tests),
+      settings: { ...base.settings, ...obj(s.settings), weights: obj(s.settings?.weights) }, meta: obj(s.meta) };
   } catch (err) {
     console.warn('Gespeicherte Daten konnten nicht gelesen werden.', err);
     return freshState();
@@ -1372,33 +1542,31 @@ const PLAN_BEGIN = ALL_DAYS[0]?.date || PLAN_START;   // erster tatsächlicher P
 const PLAN_END = PLAN.length ? addDays(PLAN_START, PLAN.length * 7 - 1) : PLAN_START;
 const EXERCISE_NAMES = [...new Set(Object.values(EX_BY_ID).map(e => e.name))];
 
-/* ---------- Gewichts-Einstellungen ----------
-   Ein eigenes Startgewicht skaliert alle Wochen anteilig (Plan-Progression bleibt erhalten).
-   Ist eine Übung im Plan ohne Gewicht, gilt der eingetragene Wert als festes Zusatzgewicht. */
-const REF_WEIGHT = {};   // erstes geplantes Gewicht > 0 je Übung
-ALL_DAYS.forEach(d => d.exercises.forEach(ex => { if (ex.planWeight > 0 && !REF_WEIGHT[ex.name]) REF_WEIGHT[ex.name] = ex.planWeight; }));
+/* ---------- Eigene Gewichte ----------
+   Margit trägt ihr Gewicht im Training selbst ein (state.exercises[id].weight).
+   Ohne Eintrag gilt das zuletzt eingetragene Gewicht derselben Übung (wkey), sonst nur der Vorschlag aus dem Plan. */
+const WEIGHT_KEYS = [
+  { key: 'squat', label: 'Goblet Squat' }, { key: 'hip-db', label: 'Hip Thrust (Kurzhantel)' }, { key: 'hip-bb', label: 'Hip Thrust (Langhantel)' },
+  { key: 'row', label: 'Einarmiges Rudern' }, { key: 'step', label: 'Step-up mit Kurzhanteln', perHand: true }, { key: 'pallof', label: 'Pallof Press' },
+  { key: 'rdl-db', label: 'Rumänisches Kreuzheben (Kurzhanteln)', perHand: true }, { key: 'rdl-bb', label: 'Rumänisches Kreuzheben (Langhantel)' },
+  { key: 'bench', label: 'Brustpresse', perHand: true }, { key: 'lat', label: 'Latzug' }, { key: 'face', label: 'Face Pull' }, { key: 'farmer', label: "Farmer's Walk", perHand: true }
+];
+const WKEY = Object.fromEntries(WEIGHT_KEYS.map(k => [k.key, k]));
+const LEG_KEYS = ['squat', 'hip-db', 'hip-bb', 'step', 'rdl-db', 'rdl-bb'];
+const ownWeight = ex => { const v = state.exercises[ex.id]?.weight; return v > 0 ? v : null; };
 
-const WEIGHT_EXERCISES = (() => {
-  const seen = new Map();
-  ALL_DAYS.filter(d => d.type === 'training' || d.type === 'optional').forEach(d => d.exercises.forEach(ex => {
-    if (!/^(sek|min)/i.test(ex.unit || '') && !seen.has(ex.name)) seen.set(ex.name, d.name);
+function applyOwnWeights() {
+  const last = {};
+  ALL_DAYS.forEach(d => d.exercises.forEach(ex => {
+    if (!ex.wkey) return;
+    const own = ownWeight(ex);
+    if (own) { ex.weight = own; ex.weightSource = 'own'; last[ex.wkey] = own; }
+    else if (last[ex.wkey]) { ex.weight = last[ex.wkey]; ex.weightSource = 'last'; }
+    else { ex.weight = 0; ex.weightSource = null; }
+    ex.load = ex.weight ? null : `Vorschlag ${ex.hint}`;
   }));
-  return [...seen].map(([name, group]) => ({ name, group, ref: REF_WEIGHT[name] || 0 }));
-})();
-
-const roundWeight = w => { const step = w >= 40 ? 2.5 : w >= 10 ? 1 : 0.5; return Math.round(w / step) * step; };
-const weightCfg = name => (state.settings.weights ||= {})[name];
-
-function applyWeightSettings() {
-  Object.values(EX_BY_ID).forEach(ex => {
-    const c = weightCfg(ex.name), ref = REF_WEIGHT[ex.name];
-    if (!c) ex.weight = ex.planWeight;
-    else if (c.bodyweight) ex.weight = 0;
-    else if (c.weight > 0) ex.weight = ref && ex.planWeight ? roundWeight(ex.planWeight * c.weight / ref) : c.weight;
-    else ex.weight = ex.planWeight;
-  });
 }
-applyWeightSettings();
+applyOwnWeights();
 
 
 /* =======================================================================
@@ -1410,10 +1578,20 @@ const isDayDone = d => !!state.days[d.id]?.completed;
 const isExDone = ex => !!state.exercises[ex.id]?.done;
 
 const setsDone = ex => isExDone(ex) ? ex.sets : Math.min(state.exercises[ex.id]?.setsDone || 0, ex.sets);
-const unitKind = ex => /^sek/i.test(ex.unit || '') ? 'sek' : /^min/i.test(ex.unit || '') ? 'min' : 'wdh';
-const isTimed = ex => unitKind(ex) !== 'wdh';
-const isCardio = ex => unitKind(ex) === 'min';
-const repsUnit = ex => ({ sek: 's', min: ' Min', wdh: '' })[unitKind(ex)];
+const unitKind = ex => {
+  const u = ex.unit || '';
+  return /^sek/i.test(u) ? 'sek' : /^min/i.test(u) ? 'min' : /^km$/i.test(u) ? 'km' : /^m$/i.test(u) ? 'm' : 'wdh';
+};
+const isTimed = ex => unitKind(ex) === 'sek' || unitKind(ex) === 'min';
+const isCardio = ex => unitKind(ex) === 'min' || unitKind(ex) === 'km';
+const repsUnit = ex => ({ sek: ' s', min: ' Min', km: ' km', m: ' m', wdh: '' })[unitKind(ex)];
+const showsLoad = ex => !ex.fixed && !isCardio(ex);
+// Umfang einer Übung als Text, z. B. "3 × 12 je Seite", "8 × 1,5 Min", "10 km"
+function fmtAmount(ex) {
+  if (ex.display) return ex.display;
+  const v = `${num(ex.reps, 2)}${repsUnit(ex)}`;
+  return (ex.sets === 1 && unitKind(ex) !== 'wdh' ? v : `${ex.sets} × ${v}`) + (ex.suffix ? ` ${ex.suffix}` : '');
+}
 
 function exStatus(ex) {
   if (isExDone(ex)) return { label: 'Erledigt', cls: 's-done' };
@@ -1422,7 +1600,7 @@ function exStatus(ex) {
   return { label: 'Offen', cls: 's-open' };
 }
 function exTarget(ex) {
-  return [`${ex.sets} × ${ex.reps}${repsUnit(ex)}`, isCardio(ex) ? null : fmtWeight(ex.weight), ex.rest > 0 ? `${ex.rest}s Pause` : null, ex.rpe ? `RPE ${num(ex.rpe)}` : null].filter(Boolean).join(' · ');
+  return [fmtAmount(ex), showsLoad(ex) ? fmtLoad(ex) : null, ex.rest > 0 ? `${fmtRest(ex)} ${ex.restLabel || 'Pause'}` : null, ex.rpe ? `RPE ${num(ex.rpe)}` : null].filter(Boolean).join(' · ');
 }
 
 const totalSets = d => d.exercises.reduce((s, ex) => s + ex.sets, 0);
@@ -1499,13 +1677,13 @@ function globalStats() {
 function motivation(g) {
   const t = todayDay();
   const quotes = [
-    'Disziplin schlägt Motivation – an jedem einzelnen Tag.',
-    'Stärke entsteht nicht im Training, sondern in der Erholung danach.',
-    'Kleine Fortschritte, konsequent wiederholt, ergeben große Ergebnisse.',
     'Du musst nicht perfekt sein. Nur beständig.',
-    'Jeder Satz zählt. Jede Wiederholung ist eine Investition.',
-    'Der schwerste Satz ist der, den du gerade nicht machen willst.',
-    'Fortschritt ist leise. Bleib dran, er wird laut.'
+    'Stärke entsteht nicht im Training, sondern in der Erholung danach.',
+    'Kleine Schritte, oft wiederholt, bringen dich bis zu den Giglachseen.',
+    'Gehpausen sind kein Schummeln – sie sind Teil der Methode.',
+    'Jede Einheit zählt. Auch die kurze.',
+    'Entscheidend ist der Trend über einen Monat, nicht die Waage von heute.',
+    'Fortschritt ist leise. Bleib dran, er wird spürbar.'
   ];
   const quote = quotes[Math.abs(diffDays(PLAN_START, TODAY)) % quotes.length];
   if (!PLAN.length) return { title: 'Kein Plan geladen', text: 'Füge deinen Trainingsplan im Code ein.', tone: 'info', quote };
@@ -1544,7 +1722,7 @@ let ANIM = true;   // false = In-Place-Update ohne Eingangsanimationen
 function ring(value, { size = 120, stroke = 10, grad = 'gradPrimary', label = '', sub = '', fontSize } = {}) {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, v = clamp(value || 0, 0, 1);
   const offset = ANIM ? c : c * (1 - v);
-  return `<div class="ring" style="width:${size}px;height:${size}px;font-size:${fontSize || size / 7.5}px">
+  return `<div class="ring" style="width:${size}px;max-width:100%;aspect-ratio:1/1;font-size:${fontSize || size / 7.5}px">
     <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
       <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}"/>
       <circle class="ring-fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke="url(#${grad})"
@@ -1580,7 +1758,7 @@ function emptyState(iconName, title, text, actions = '') {
 
 /* ---------- Charts (reines SVG) ---------- */
 function barChart(items, { height = 220, fmt = v => num(v) } = {}) {
-  const W = 640, H = height, pt = 26, pb = 30, px = 6;
+  const W = chartW(), H = isNarrow() ? Math.round(height * 0.85) : height, pt = 26, pb = 30, px = 6;
   const n = Math.max(1, items.length), slot = (W - px * 2) / n, bw = Math.min(34, slot * 0.56), ih = H - pt - pb;
   const max = Math.max(1, ...items.map(i => Math.max(i.value, i.max || 0)));
   let s = '';
@@ -1591,15 +1769,23 @@ function barChart(items, { height = 220, fmt = v => num(v) } = {}) {
     const h = ih * it.value / max;
     if (h > 0) s += `<rect class="bar-fg" x="${x}" y="${pt + ih - h}" width="${bw}" height="${h}" rx="${Math.min(8, h / 2)}" fill="url(#${it.grad || 'gradPrimaryV'})" style="animation-delay:${i * 50}ms"><title>${esc(it.label)}: ${fmt(it.value)}${it.max ? ' / ' + fmt(it.max) : ''}</title></rect>`;
     if (it.value > 0) s += `<text class="bar-val" x="${cx}" y="${pt + ih - h - 8}">${fmt(it.value)}</text>`;
-    s += `<text class="axis-label ${it.highlight ? 'hl' : ''}" x="${cx}" y="${H - 8}">${esc(it.label)}</text>`;
+    const hi = items.findIndex(x => x.highlight);
+    if (showAxisLabel(i, n, hi)) s += `<text class="axis-label ${it.highlight ? 'hl' : ''}" x="${cx}" y="${H - 8}">${esc(n > 14 ? axisText(it.label) : it.label)}</text>`;
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">${s}</svg>`;
 }
 
-function lineChart(labels, series, { height = 240, fmt = v => num(v), zero = false, highlight = -1 } = {}) {
+// Bei vielen Wochen nur jede zweite Achsenbeschriftung (plus die hervorgehobene), damit sie am Handy lesbar bleibt
+const showAxisLabel = (i, n, highlight) => n <= 14 || i === highlight || (i % 2 === 0 && Math.abs(i - highlight) > 1);
+// Schmalere Zeichenfläche am Handy → größere, lesbare Beschriftung
+const isNarrow = () => window.innerWidth < 720;
+const chartW = () => isNarrow() ? 360 : 640;
+const axisText = l => String(l).replace(/^W/, '');
+
+function lineChart(labels, series, { height = 240, fmt = v => num(v), zero = false, highlight = -1, empty = 'Noch keine Daten – absolviere ein Workout, um die Entwicklung zu sehen.' } = {}) {
   const vals = series.flatMap(s => s.values).filter(v => v !== null && v !== undefined);
-  if (!vals.length) return `<div class="chart-empty">${icon('chart')}<span>Noch keine Daten – absolviere ein Workout, um die Entwicklung zu sehen.</span></div>`;
-  const W = 640, H = height, pt = 20, pb = 30, pl = 48, pr = 14, iw = W - pl - pr, ih = H - pt - pb, n = labels.length;
+  if (!vals.length) return `<div class="chart-empty">${icon('chart')}<span>${esc(empty)}</span></div>`;
+  const W = chartW(), H = isNarrow() ? Math.round(height * 0.85) : height, pt = 20, pb = 30, pl = 54, pr = 14, iw = W - pl - pr, ih = H - pt - pb, n = labels.length;
   let min = zero ? 0 : Math.min(...vals), max = Math.max(...vals);
   if (min === max) { max += 1; min = Math.max(0, min - 1); }
   const padV = (max - min) * 0.15;
@@ -1612,7 +1798,7 @@ function lineChart(labels, series, { height = 240, fmt = v => num(v), zero = fal
     const v = min + (max - min) * (4 - g) / 4, y = pt + ih * g / 4;
     s += `<line class="grid-line" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text class="axis-y" x="${pl - 8}" y="${y + 4}">${fmt(v)}</text>`;
   }
-  labels.forEach((l, i) => { s += `<text class="axis-label ${i === highlight ? 'hl' : ''}" x="${X(i)}" y="${H - 8}">${esc(l)}</text>`; });
+  labels.forEach((l, i) => { if (showAxisLabel(i, n, highlight)) s += `<text class="axis-label ${i === highlight ? 'hl' : ''}" x="${X(i)}" y="${H - 8}">${esc(n > 14 ? axisText(l) : l)}</text>`; });
   series.forEach(se => {
     // In zusammenhängende Segmente aufteilen (null = Lücke)
     const segs = []; let cur = [];
@@ -1700,7 +1886,8 @@ const ROUTES = {
 const ui = {
   route: 'dashboard',
   selectedWeek: currentWeekIndex(),
-  progressExercise: EXERCISE_NAMES.includes('Goblet Squat') ? 'Goblet Squat' : EXERCISE_NAMES[0],
+  progressExercise: 'squat',
+  measureWeek: null,    // null = aktuelle Woche
   modalDayId: null,
   focus: null,          // { dayId, exIndex, startedAt, finished }
   lastToggled: null     // für Check-"Pop"-Animation
@@ -1768,8 +1955,8 @@ function viewDashboard() {
         <div class="next-title">${esc(next.name)}</div>
         <div class="card-sub">${esc(next.focus || '')}</div>
         <ul class="mini-list">
-          ${next.exercises.slice(0, 3).map(ex => `<li><span>${esc(ex.name)}</span><span>${ex.sets}×${ex.reps}${repsUnit(ex)}${ex.weight ? ' · ' + num(ex.weight, 2) + ' kg' : ''}</span></li>`).join('')}
-          ${next.exercises.length > 3 ? `<li><span class="muted">+ ${next.exercises.length - 3} weitere Übungen</span><span></span></li>` : ''}
+          ${(() => { const list = next.exercises.filter(ex => ex.name !== 'Aufwärmen' && !/^(Einlaufen|Auslaufen)/.test(ex.name)); return list.slice(0, 3).map(ex => `<li><span>${esc(ex.name)}</span><span>${esc(fmtAmount(ex))}${showsLoad(ex) && ex.weight ? ' · ' + num(ex.weight, 2) + ' kg' : ''}</span></li>`).join('')
+            + (list.length > 3 ? `<li><span class="muted">+ ${list.length - 3} weitere Übungen</span><span></span></li>` : ''); })()}
         </ul>
         <button class="btn btn-ghost btn-block" data-action="open-day" data-day="${next.id}">Details ansehen</button>`
       : `<div class="empty" style="padding:20px 0"><div class="empty-icon">${icon('trophy')}</div><h3>Alles geschafft</h3><p>Keine weiteren Workouts im Plan.</p></div>`}
@@ -1794,6 +1981,34 @@ function viewDashboard() {
         ${g.missed ? `<span class="badge s-missed">${g.missed} verpasst</span>` : ''}
       </div>
     </section>
+
+    <section class="card span-6">
+      <div class="card-head"><div><div class="card-title">${icon('target')} Deine Ziele</div><div class="card-sub">Kräftiger und beweglicher werden · 10 kg abnehmen · weniger Knie- und Schulterbeschwerden</div></div></div>
+      <div class="goal-list">${GOALS.map(goalRow).join('')}</div>
+    </section>
+
+    <section class="card span-6">
+      <div class="card-head"><div class="card-title">${icon('info')} Wichtige Regeln</div></div>
+      <ul class="rule-list">
+        <li><strong>Knie:</strong> Schmerz bis 3 von 10 ist okay, wenn er am nächsten Tag weg ist. Mehr → Übung leichter machen oder weglassen.</li>
+        <li><strong>Schultern & Nacken:</strong> Kopf in Verlängerung der Wirbelsäule, keine Gewichte über dem Kopf.</li>
+        <li><strong>Halsoperation:</strong> Bei jeder Übung, die am Hals drückt oder zieht, sofort aufhören.</li>
+        <li><strong>Krank?</strong> Pause. Danach mit der Woche davor weitermachen. Eine Woche verpasst: die letzte vollständige Woche wiederholen.</li>
+        <li><strong>Tage tauschen</strong> ist erlaubt – mindestens ein Tag zwischen den Krafttagen, Lauf-Geh und lange Ausdauer nicht direkt hintereinander.</li>
+        <li><strong>RPE</strong> (Anstrengung 1–10): 6 = gut machbar, 7 = fordernd, aber sauber, 8 = nur noch 2 Wdh. im Tank. Nie bis zur 10.</li>
+      </ul>
+    </section>
+  </div>`;
+}
+
+function goalRow(goal) {
+  const day = goal.week ? PLAN[goal.week - 1]?.days.find(d => /wings for life/i.test(d.name)) : null;
+  const n = day ? diffDays(TODAY, day.date) : null;
+  const when = day ? (n > 0 ? `in ${plural(n, 'Tag', 'Tagen')}` : n === 0 ? 'heute!' : 'geschafft') : 'nach dem Plan';
+  return `<div class="goal">
+    <div class="goal-icon">${icon(goal.icon)}</div>
+    <div class="goal-main"><strong>${esc(goal.title)}</strong><span>${esc(goal.sub)}${goal.week ? ` · Woche ${goal.week}` : ''}</span></div>
+    <span class="badge ${day && n <= 0 ? 's-done' : 's-upcoming'}">${esc(when)}</span>
   </div>`;
 }
 
@@ -2014,12 +2229,13 @@ function viewProgress() {
   const weeks = PLAN.map(w => weekStats(w));
   const labels = PLAN.map((_, i) => `W${i + 1}`);
 
-  // Geplante Gewichtsprogression der gewählten Übung pro Woche
-  const weightedNames = EXERCISE_NAMES.filter(n => Object.values(EX_BY_ID).some(e => e.name === n && e.weight > 0));
-  const exName = weightedNames.includes(ui.progressExercise) ? ui.progressExercise : weightedNames[0];
+  // Geplante Gewichtsprogression der gewählten Übung (über alle Varianten hinweg) pro Woche
+  // Eingetragene Gewichte (nur eigene Einträge) der gewählten Übung pro Woche
+  const keys = WEIGHT_KEYS.filter(k => Object.values(EX_BY_ID).some(e => e.wkey === k.key));
+  const exKey = keys.some(k => k.key === ui.progressExercise) ? ui.progressExercise : keys[0]?.key;
   const planVals = PLAN.map(w => {
-    const exs = w.days.flatMap(d => d.exercises).filter(e => e.name === exName);
-    return exs.length ? Math.max(...exs.map(e => e.weight || 0)) || null : null;
+    const vals = w.days.flatMap(d => d.exercises).filter(e => e.wkey === exKey).map(ownWeight).filter(Boolean);
+    return vals.length ? Math.max(...vals) : null;
   });
 
   return `<div class="grid">
@@ -2029,6 +2245,9 @@ function viewProgress() {
       <section class="card ring-card lift">${ring(g.consistency ?? 0, { size: 130, stroke: 11, grad: 'gradRecovery', label: g.consistency === null ? '–' : `${count(pct(g.consistency))}%` })}<div><h3>Konsistenz</h3><p>${g.missed} verpasst</p></div></section>
       <section class="card ring-card lift">${ring(g.totalWorkouts ? g.workoutsDone / g.totalWorkouts : 0, { size: 130, stroke: 11, grad: 'gradWarm', label: count(g.workoutsDone) })}<div><h3>Workouts</h3><p>inkl. optionaler Einheiten</p></div></section>
     </div>
+
+    ${measureCard()}
+    ${testsCard()}
 
     <section class="card span-6">
       <div class="card-head"><div><div class="card-title">${icon('dumbbell')} Absolvierte Workouts</div><div class="card-sub">Pflicht-Trainings pro Woche</div></div>
@@ -2047,14 +2266,14 @@ function viewProgress() {
 
     <section class="card span-8">
       <div class="card-head">
-        <div><div class="card-title">${icon('trend')} Gewichtsprogression</div><div class="card-sub">Geplantes Arbeitsgewicht pro Woche</div></div>
-        <select class="input" style="width:auto;min-width:210px" id="progressExercise" aria-label="Übung wählen">
-          ${weightedNames.map(n => `<option ${n === exName ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+        <div><div class="card-title">${icon('trend')} Gewichtsprogression</div><div class="card-sub">Deine eingetragenen Gewichte pro Woche (Kurzhanteln: pro Hantel)</div></div>
+        <select class="input select-ex" id="progressExercise" aria-label="Übung wählen">
+          ${keys.map(k => `<option value="${k.key}" ${k.key === exKey ? 'selected' : ''}>${esc(k.label)}</option>`).join('')}
         </select>
       </div>
       ${lineChart(labels, [
-        { name: 'Plan', values: planVals, color: '#3ec9ff', area: 'areaPrimary' }
-      ], { fmt: v => num(v, 1) + ' kg', highlight: wi })}
+        { name: 'Dein Gewicht', values: planVals, color: '#3ec9ff', area: 'areaPrimary' }
+      ], { fmt: v => num(v, 1) + ' kg', highlight: wi, empty: 'Noch kein Gewicht eingetragen – trag im Training bei der Übung „Dein Gewicht“ ein.' })}
     </section>
 
     <section class="card span-4">
@@ -2068,9 +2287,66 @@ function viewProgress() {
     <section class="card span-12">
       <div class="card-head"><div><div class="card-title">${icon('activity')} Trainingskonsistenz</div><div class="card-sub">Jeder Tag deines Plans auf einen Blick – klicke für Details</div></div>
       <div class="kpi" style="text-align:right"><strong>${num(g.sets, 0)}</strong><span>Sätze absolviert</span></div></div>
-      ${heatmap()}
+      <div class="hscroll">${heatmap()}</div>
     </section>
   </div>`;
+}
+
+/* ---------- Messwerte & Tests (Fortschritt) ---------- */
+const TESTS = [
+  { id: 'chair', label: 'Aufstehen vom Stuhl', unit: 'Wdh. in 30 s', mode: 'decimal' },
+  { id: 'floor', label: 'Aufstehen vom Boden', unit: 'Stufe 1–6', mode: 'numeric' },
+  { id: 'plank', label: 'Unterarmstütz (Knie)', unit: 'Sekunden', mode: 'numeric' },
+  { id: 'run', label: '3 km Lauf-Geh', unit: 'Zeit mm:ss', mode: 'text' },
+  { id: 'goblet', label: 'Goblet Squat 10 Wdh.', unit: 'kg', mode: 'decimal' }
+];
+const TEST_WEEK_NUMS = PLAN.map((w, i) => w.test ? i + 1 : null).filter(Boolean);
+const parseNum = v => { const n = parseFloat(String(v ?? '').trim().replace(',', '.')); return Number.isFinite(n) ? n : null; };
+
+function weightChart() {
+  const vals = PLAN.map((_, i) => state.measure[i]?.weight ?? null);
+  const first = vals.findIndex(v => v !== null);
+  // Zielkorridor: ca. 0,4 kg pro Woche, höchstens 10 kg
+  const target = first < 0 ? vals.map(() => null)
+    : vals.map((_, i) => i < first ? null : Math.round((vals[first] - Math.min(10, 0.4 * (i - first))) * 10) / 10);
+  return lineChart(PLAN.map((_, i) => `W${i + 1}`), [
+    { name: 'Ziel (−0,4 kg/Woche)', values: target, color: '#7c6cff', dashed: true },
+    { name: 'Gewicht', values: vals, color: '#2fe39a', area: 'areaSuccess' }
+  ], { fmt: v => num(v, 1) + ' kg', highlight: currentWeekIndex(), empty: 'Trage dein Gewicht ein, um den Verlauf zu sehen.' });
+}
+
+function measureCard() {
+  const wi = clamp(ui.measureWeek ?? currentWeekIndex(), 0, PLAN.length - 1);
+  const m = state.measure[wi] || {};
+  const field = (k, label, unit) => `<label class="field"><span>${label}</span>
+    <div class="unit-input"><input class="input" type="text" inputmode="decimal" autocomplete="off" value="${m[k] != null ? num(m[k], 1) : ''}" data-m="${k}" data-week="${wi}" placeholder="–"><em>${unit}</em></div></label>`;
+  return `<section class="card span-12">
+    <div class="card-head">
+      <div><div class="card-title">${icon('activity')} Körpergewicht & Umfang</div>
+      <div class="card-sub">Gewicht jede Woche am gleichen Tag, morgens nach dem Aufstehen. Bauch (Nabelhöhe) und Hüfte einmal im Monat.</div></div>
+      <select class="input select-week" id="measureWeek" aria-label="Woche wählen">
+        ${PLAN.map((w, i) => `<option value="${i}" ${i === wi ? 'selected' : ''}>Woche ${i + 1} · ${fmtDate(w.days[0]?.date || addDays(PLAN_START, i * 7))}</option>`).join('')}
+      </select>
+    </div>
+    <div class="measure-grid">
+      ${field('weight', 'Gewicht', 'kg')}${field('waist', 'Bauchumfang', 'cm')}${field('hip', 'Hüftumfang', 'cm')}
+    </div>
+    <div id="weightChart" style="margin-top:18px">${weightChart()}</div>
+    <p class="card-sub" style="margin-top:10px">Realistisch sind etwa 0,4 kg pro Woche. Die Waage schwankt – entscheidend ist der Trend über einen Monat.</p>
+  </section>`;
+}
+
+function testsCard() {
+  return `<section class="card span-12">
+    <div class="card-head"><div><div class="card-title">${icon('award')} Tests</div>
+    <div class="card-sub">In den Test-Wochen ${TEST_WEEK_NUMS.join(', ')} eintragen und vergleichen.</div></div></div>
+    <div class="hscroll"><table class="test-table">
+      <thead><tr><th>Test</th>${TEST_WEEK_NUMS.map(n => `<th>Woche ${n}</th>`).join('')}</tr></thead>
+      <tbody>${TESTS.map(t => `<tr><td><strong>${esc(t.label)}</strong><span>${esc(t.unit)}</span></td>${TEST_WEEK_NUMS.map(n =>
+        `<td><input class="input" type="text" inputmode="${t.mode}" autocomplete="off" value="${esc(state.tests[n]?.[t.id] ?? '')}" data-t="${t.id}" data-tw="${n}" placeholder="–" aria-label="${esc(t.label)} Woche ${n}"></td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table></div>
+  </section>`;
 }
 
 /* ---------- Timer ---------- */
@@ -2080,16 +2356,17 @@ function viewTimer() {
     <section class="card span-5">
       <div class="card-head"><div class="card-title">${icon('info')} Pausen-Empfehlungen</div></div>
       <table class="rest-table">
-        <tr><td>Maximalkraft (1–5 Wdh.)</td><td>180–300 s</td></tr>
-        <tr><td>Kraft / Hypertrophie (6–10 Wdh.)</td><td>90–180 s</td></tr>
-        <tr><td>Hypertrophie (10–15 Wdh.)</td><td>60–90 s</td></tr>
-        <tr><td>Kraftausdauer / Isolation</td><td>30–60 s</td></tr>
+        <tr><td>Phase 1 · Einstieg & Erholungswochen</td><td>60 s</td></tr>
+        <tr><td>Phase 2 · Aufbau</td><td>75 s</td></tr>
+        <tr><td>Phase 3 & 4</td><td>90 s</td></tr>
+        <tr><td>Rumpf (Pallof Press, Dead Bug)</td><td>45 s</td></tr>
+        <tr><td>Lauf-Geh: Gehpausen</td><td>1–2 Min</td></tr>
       </table>
       <div class="toggle" style="margin-top:12px">
         <div><strong>Signalton</strong><div class="card-sub">Akustisches Signal & Vibration bei Ablauf</div></div>
         <button class="switch ${state.settings.sound ? 'on' : ''}" data-action="toggle-sound" role="switch" aria-checked="${state.settings.sound}" aria-label="Signalton"></button>
       </div>
-      <p class="card-sub" style="margin-top:8px">Tipp: Im Fokus-Modus startet der Timer nach jedem Satz automatisch mit der geplanten Pause der Übung.</p>
+      <p class="card-sub" style="margin-top:8px">Tipp: Im Training-Modus startet der Timer nach jedem Satz automatisch mit der geplanten Pause – beim Lauf-Geh-Training mit der Gehpause.</p>
     </section>
   </div>`;
 }
@@ -2097,41 +2374,33 @@ function viewTimer() {
 
 /* ---------- Einstellungen ---------- */
 function viewSettings() {
-  const wi = currentWeekIndex();
-  const groups = {};
-  WEIGHT_EXERCISES.forEach((w, i) => (groups[w.group] ||= []).push({ ...w, i }));
-  const customCount = Object.keys(state.settings.weights || {}).length;
-
-  const row = w => {
-    const c = weightCfg(w.name), bw = !!c?.bodyweight;
-    const current = PLAN[wi]?.days.flatMap(d => d.exercises).find(e => e.name === w.name);
-    const value = c?.weight > 0 ? c.weight : w.ref || '';
-    const hint = bw ? 'Wird ohne Zusatzgewicht ausgeführt'
-      : `${w.ref ? `Plan: ${fmtWeight(w.ref)}` : 'Plan: Körpergewicht'}${current ? ` · Woche ${wi + 1}: ${fmtWeight(current.weight)}` : ''}`;
-    return `<div class="wrow ${c ? 'custom' : ''}">
-      <div class="wrow-main"><strong>${esc(w.name)}</strong><span>${hint}</span>${c ? `<button class="wrow-reset" data-action="w-reset" data-i="${w.i}">Zurücksetzen</button>` : ''}</div>
-      <div class="seg" role="group" aria-label="Belastungsart ${esc(w.name)}">
-        <button class="${bw ? '' : 'active'}" data-action="w-mode" data-mode="weight" data-i="${w.i}">Gewicht</button>
-        <button class="${bw ? 'active' : ''}" data-action="w-mode" data-mode="bw" data-i="${w.i}">Körpergewicht</button>
-      </div>
-      <div class="wbox ${bw ? 'disabled' : ''}">
-        <button class="icon-btn" data-action="w-step" data-dir="-1" data-i="${w.i}" aria-label="Gewicht verringern">−</button>
-        <input class="input" type="number" inputmode="decimal" min="0" step="0.5" value="${value}" placeholder="${w.ref ? '' : 'Zusatz'}" data-w-i="${w.i}" aria-label="Startgewicht ${esc(w.name)}">
-        <span class="unit">kg</span>
-        <button class="icon-btn" data-action="w-step" data-dir="1" data-i="${w.i}" aria-label="Gewicht erhöhen">+</button>
-      </div>
+  // Letztes eingetragenes Gewicht je Übung (chronologisch)
+  const latest = {};
+  ALL_DAYS.forEach(d => d.exercises.forEach(ex => { const w = ex.wkey && ownWeight(ex); if (w) latest[ex.wkey] = { w, date: d.date, ex }; }));
+  const hints = {};
+  ALL_DAYS.forEach(d => d.exercises.forEach(ex => { if (ex.wkey && !hints[ex.wkey]) hints[ex.wkey] = ex.hint; }));
+  const rows = WEIGHT_KEYS.map(k => {
+    const l = latest[k.key];
+    return `<div class="wrow">
+      <div class="wrow-main"><strong>${esc(k.label)}</strong><span>${l ? `Zuletzt ${fmtDate(l.date, { weekday: 'short', day: '2-digit', month: '2-digit' })}` : `Vorschlag laut Plan: ${esc(hints[k.key] || '–')}`}</span></div>
+      <span class="wval ${l ? '' : 'muted'}">${l ? `${num(l.w, 2)} kg${k.perHand ? ' <small>pro Hantel</small>' : ''}` : 'noch offen'}</span>
     </div>`;
-  };
+  }).join('');
 
   return `<div class="grid">
     <section class="card span-12">
       <div class="card-head">
-        <div><div class="card-title">${icon('dumbbell')} Gewichte der Übungen</div>
-        <div class="card-sub">Startgewicht (Woche 1) anpassen – die Folgewochen werden anteilig mitgerechnet, die Progression des Plans bleibt erhalten.</div></div>
-        ${customCount ? `<button class="btn btn-ghost" data-action="w-reset-all">${icon('reset', 'i-sm')} Alle zurücksetzen</button>` : ''}
+        <div><div class="card-title">${icon('dumbbell')} Deine Gewichte</div>
+        <div class="card-sub">Das Gewicht trägst du direkt im Training bei jeder Übung ein („Dein Gewicht“). Beim nächsten Mal wird es automatisch übernommen – erhöhe es selbst, wenn alle Sätze sauber gehen und es sich leichter anfühlt als das Ziel-RPE (1–2 kg, Beine 2–4 kg).</div></div>
       </div>
-      ${Object.entries(groups).map(([g, list]) => `<div class="wgroup"><div class="wgroup-title">${esc(g)}</div><div class="wlist">${list.map(row).join('')}</div></div>`).join('')
-        || '<p class="muted">Keine Übungen im Plan.</p>'}
+      <div class="wlist">${rows}</div>
+    </section>
+    <section class="card span-12">
+      <div class="card-head"><div><div class="card-title">${icon('info')} Daten</div>
+      <div class="card-sub">Dein Fortschritt wird nur auf diesem Gerät im Browser gespeichert.</div></div></div>
+      <div class="actions">
+        <button class="btn btn-danger" data-action="reset-all">${icon('trash', 'i-sm')} Fortschritt zurücksetzen</button>
+      </div>
     </section>
   </div>`;
 }
@@ -2207,16 +2476,45 @@ function renderModal() {
 
 function specGrid(ex, cls = '') {
   const kind = unitKind(ex);
-  const amount = kind === 'min' && ex.sets === 1
-    ? ['Dauer', `${ex.reps} Min`]
-    : [kind === 'min' ? 'Intervalle' : `Sätze × ${kind === 'sek' ? 'Sek.' : 'Wdh.'}`, `${ex.sets} × ${ex.reps}${kind === 'min' ? ' Min' : ''}`];
-  const tile = ([label, value]) => `<div class="spec"><span>${label}</span><strong>${value}</strong></div>`;
+  const single = ex.sets === 1 && kind !== 'wdh';
+  const label = ex.display ? 'Umfang'
+    : single ? (kind === 'km' || kind === 'm' ? 'Strecke' : 'Dauer')
+    : kind === 'min' ? 'Abschnitte' : kind === 'm' ? 'Runden × Meter' : `Sätze × ${kind === 'sek' ? 'Sek.' : 'Wdh.'}`;
+  const tile = ([l, value]) => `<div class="spec"><span>${l}</span><strong>${esc(value)}</strong></div>`;
   return `<div class="specs ${cls}">${[
-    amount,
-    kind === 'min' ? null : ['Gewicht', fmtWeight(ex.weight)],
-    ex.rest > 0 ? ['Pause', `${ex.rest}s`] : null,
+    [ex.suffix && !ex.display ? `${label} (${ex.suffix})` : label, ex.suffix && !ex.display ? fmtAmount({ ...ex, suffix: '' }) : fmtAmount(ex)],
+    showsLoad(ex) ? ['Gewicht', ex.weight || ex.load ? fmtLoad(ex) : 'Körper­gewicht'] : null,
+    ex.rest > 0 ? [ex.restLabel || 'Pause', fmtRest(ex)] : null,
     ex.rpe ? ['RPE', num(ex.rpe)] : null
   ].filter(Boolean).map(tile).join('')}</div>`;
+}
+
+// Eingabe "Dein Gewicht" bei Übungen mit Gewicht (Modal & Fokus-Modus)
+function weightInput(ex) {
+  if (!ex.wkey) return '';
+  const own = ownWeight(ex), meta = WKEY[ex.wkey] || {};
+  const step = LEG_KEYS.includes(ex.wkey) ? 'Beine: 2–4 kg' : '1–2 kg';
+  const state_ = own ? 'Eingetragen.' : ex.weightSource === 'last' ? `Vom letzten Mal übernommen (${num(ex.weight, 2)} kg) – ändern oder so lassen.` : `Noch kein Gewicht eingetragen. Vorschlag laut Plan: ${esc(ex.hint)}.`;
+  return `<div class="wlog">
+    <div class="wlog-row">
+      <span class="wlog-label">Dein Gewicht${meta.perHand ? ' <em>pro Hantel</em>' : ''}</span>
+      <div class="wlog-box">
+        <button class="icon-btn" data-action="wlog-step" data-ex="${ex.id}" data-dir="-1" aria-label="Gewicht verringern">−</button>
+        <input class="input" type="text" inputmode="decimal" autocomplete="off" data-wlog="${ex.id}" value="${own ? num(own, 2) : ''}" placeholder="${ex.weight ? num(ex.weight, 2) : '–'}" aria-label="Gewicht ${esc(ex.name)} in kg">
+        <span class="unit">kg</span>
+        <button class="icon-btn" data-action="wlog-step" data-ex="${ex.id}" data-dir="1" aria-label="Gewicht erhöhen">+</button>
+      </div>
+    </div>
+    <p class="wlog-hint">${state_} Alle Sätze sauber und leichter als RPE ${ex.rpe ? num(ex.rpe) : 'Ziel'}? Nächstes Mal mehr nehmen (${step}).</p>
+  </div>`;
+}
+
+function setOwnWeight(exId, value) {
+  const ex = EX_BY_ID[exId]; if (!ex) return;
+  const s = ensureEx(ex.id);
+  if (value > 0 && value <= 500) s.weight = Math.round(value * 100) / 100; else delete s.weight;
+  applyOwnWeights();
+  save();
 }
 
 function exerciseCard(ex) {
@@ -2228,8 +2526,9 @@ function exerciseCard(ex) {
       <span class="badge ${s.cls}">${s.label}</span>
     </div>
     ${specGrid(ex)}
+    ${weightInput(ex)}
     ${ex.notes ? `<div class="ex-plan-note">${icon('info')}<span>${esc(ex.notes)}</span></div>` : ''}
-    <div class="sets-row"><span>Sätze ${sd}/${ex.sets}</span>
+    <div class="sets-row"><span>${isCardio(ex) || ex.fixed ? (ex.sets === 1 ? 'Erledigt' : 'Abschnitte') : 'Sätze'} ${sd}/${ex.sets}</span>
       <div class="set-dots">${Array.from({ length: ex.sets }, (_, k) => `<button class="set-dot ${k < sd ? 'on' : ''}" data-action="set-sets" data-ex="${ex.id}" data-n="${k + 1}" aria-label="Satz ${k + 1}">${k + 1}</button>`).join('')}</div>
     </div>
   </div>`;
@@ -2289,18 +2588,19 @@ function renderFocus() {
         <div class="eyebrow">Übung ${f.exIndex + 1} von ${d.exercises.length}</div>
         <h1>${esc(ex.name)}</h1>
         ${specGrid(ex, 'big')}
+        ${weightInput(ex)}
         ${ex.notes ? `<div class="ex-plan-note">${icon('info')}<span>${esc(ex.notes)}</span></div>` : ''}
 
-        <div class="big-sets"><strong>${done ? ex.sets : Math.min(sd + 1, ex.sets)}</strong><span>/ ${ex.sets} ${isCardio(ex) ? (done ? 'Abschnitte erledigt' : 'Abschnitt') : (done ? 'Sätze erledigt' : 'Satz')}</span></div>
+        ${ex.sets === 1 ? '<div style="height:18px"></div>' : `<div class="big-sets"><strong>${done ? ex.sets : Math.min(sd + 1, ex.sets)}</strong><span>/ ${ex.sets} ${isCardio(ex) || ex.fixed ? (done ? 'erledigt' : 'Abschnitt') : (done ? 'Sätze erledigt' : 'Satz')}</span></div>
         <div class="focus-sets">
           ${Array.from({ length: ex.sets }, (_, k) => `<button class="set-dot ${k < sd ? 'on' : ''}" data-action="set-sets" data-ex="${ex.id}" data-n="${k + 1}" aria-label="Satz ${k + 1}">${k < sd ? icon('check', 'i-sm') : k + 1}</button>`).join('')}
-        </div>
+        </div>`}
 
         ${done
           ? (allDone
             ? `<button class="btn btn-success btn-lg btn-block" data-action="finish-workout">${icon('trophy', 'i-sm')} Workout abschließen</button>`
             : `<button class="btn btn-primary btn-lg btn-block" data-action="focus-next-open">Nächste Übung ${icon('right', 'i-sm')}</button>`)
-          : `<button class="btn btn-primary btn-lg btn-block" data-action="complete-set" data-ex="${ex.id}">${icon('check', 'i-sm')} ${isCardio(ex) ? 'Abschnitt' : 'Satz'} ${sd + 1} abschließen</button>`}
+          : `<button class="btn btn-primary btn-lg btn-block" data-action="complete-set" data-ex="${ex.id}">${icon('check', 'i-sm')} ${ex.sets === 1 ? 'Erledigt' : `${isCardio(ex) || ex.fixed ? 'Abschnitt' : 'Satz'} ${sd + 1} abschließen`}</button>`}
       </section>
 
       <aside class="card" style="padding:28px 20px">
@@ -2331,7 +2631,7 @@ function focusSummary(d) {
     <div class="finish-stats">
       <div class="card"><strong>${d.exercises.filter(isExDone).length}/${d.exercises.length}</strong><span>Übungen</span></div>
       <div class="card"><strong>${sets}</strong><span>Sätze</span></div>
-      <div class="card"><strong>${d.exercises.reduce((s, e) => s + (isTimed(e) ? 0 : setsDone(e) * e.reps), 0)}</strong><span>Wiederholungen</span></div>
+      <div class="card"><strong>${d.exercises.reduce((s, e) => s + (unitKind(e) === 'wdh' && !e.display ? setsDone(e) * e.reps : 0), 0)}</strong><span>Wiederholungen</span></div>
       <div class="card"><strong>${mins} min</strong><span>Dauer</span></div>
     </div>
     <div class="actions" style="justify-content:center">
@@ -2351,7 +2651,7 @@ let audioCtx = null;
 function timerWidget(size = 260, compact = false) {
   const stroke = compact ? 10 : 12, r = (size - stroke) / 2, c = 2 * Math.PI * r;
   return `<div class="timer-widget ${compact ? 'compact' : ''}" data-timer-widget>
-    <div class="timer-ring" style="width:${size}px;height:${size}px;max-width:100%;font-size:${size / 13}px">
+    <div class="timer-ring" style="width:${size}px;max-width:100%;aspect-ratio:1/1;font-size:${size / 13}px">
       <svg viewBox="0 0 ${size} ${size}" aria-hidden="true">
         <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}"/>
         <circle class="ring-fg timer-fg" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" stroke="url(#gradPrimary)"
@@ -2365,7 +2665,7 @@ function timerWidget(size = 260, compact = false) {
       <button class="icon-btn" data-action="timer-reset" aria-label="Zurücksetzen">${icon('reset', 'i-sm')}</button>
       <button class="icon-btn" data-action="timer-add" data-sec="15" aria-label="15 Sekunden mehr">+15</button>
     </div>
-    <div class="presets">${[60, 90, 120, 180].map(s => `<button class="preset" data-action="timer-preset" data-sec="${s}">${s}s</button>`).join('')}</div>
+    <div class="presets">${[45, 60, 75, 90, 120].map(s => `<button class="preset" data-action="timer-preset" data-sec="${s}">${s}s</button>`).join('')}</div>
   </div>`;
 }
 
@@ -2454,7 +2754,7 @@ function updateTimerUI() {
   const active = timer.running || (rem > 0 && rem < timer.duration);
   pill.classList.toggle('show', active && ui.route !== 'timer');
   pill.classList.toggle('paused', !timer.running);
-  document.title = timer.running ? `${text} · Pause – ${PLAN_CONFIG.appName}` : `${PLAN_CONFIG.appName} · Performance Training`;
+  document.title = timer.running ? `${text} · Pause – ${PLAN_CONFIG.appName}` : `${PLAN_CONFIG.appName} · ${PLAN_CONFIG.planName}`;
 }
 
 
@@ -2610,40 +2910,15 @@ const ACTIONS = {
     skipSave = true; location.reload();
   },
 
-  'w-mode': el => {
-    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
-    const cfg = (state.settings.weights[w.name] ||= {});
-    cfg.bodyweight = el.dataset.mode === 'bw';
-    if (!cfg.bodyweight && !(cfg.weight > 0)) delete state.settings.weights[w.name];
-    updateWeights();
-  },
-  'w-step': el => {
-    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
-    const cfg = (state.settings.weights[w.name] ||= {});
-    const cur = cfg.weight > 0 ? cfg.weight : w.ref;
-    const step = cur === 0 || cur >= 40 ? 2.5 : cur >= 10 ? 1 : 0.5;
-    const next = Math.max(0, Math.round((cur + step * (+el.dataset.dir)) * 100) / 100);
-    if (next > 0) { cfg.weight = next; cfg.bodyweight = false; } else delete state.settings.weights[w.name];
-    updateWeights();
-  },
-  'w-reset': el => {
-    const w = WEIGHT_EXERCISES[+el.dataset.i]; if (!w) return;
-    delete state.settings.weights[w.name];
-    updateWeights();
-  },
-  'w-reset-all': () => {
-    if (!confirm('Alle Gewichte auf die Planwerte zurücksetzen?')) return;
-    state.settings.weights = {};
-    updateWeights();
-    toast('Gewichte auf Planwerte zurückgesetzt', 'info', 'reset');
+  'wlog-step': el => {
+    const ex = EX_BY_ID[el.dataset.ex]; if (!ex) return;
+    const cur = ownWeight(ex) || ex.weight || 0;
+    const dir = +el.dataset.dir;
+    const step = cur >= 20 ? 2.5 : 1;
+    setOwnWeight(ex.id, cur === 0 && dir > 0 ? 1 : Math.max(0, cur + step * dir));
+    refresh();
   }
 };
-
-function updateWeights() {
-  applyWeightSettings();
-  save();
-  renderView(false);
-}
 
 function scrollTabs() {
   const tabs = $('#weekTabs'), active = $('.week-tab.active', tabs || document);
@@ -2672,12 +2947,29 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'progressExercise') { ui.progressExercise = t.value; renderView(false); return; }
-  if (t.dataset.wI !== undefined) {
-    const w = WEIGHT_EXERCISES[+t.dataset.wI]; if (!w) return;
-    const v = parseFloat(String(t.value).replace(',', '.'));
-    if (Number.isFinite(v) && v > 0 && v <= 1000) state.settings.weights[w.name] = { weight: Math.round(v * 100) / 100, bodyweight: false };
-    else delete state.settings.weights[w.name];
-    updateWeights();
+  if (t.id === 'measureWeek') { ui.measureWeek = +t.value; renderView(false); return; }
+  if (t.dataset.m) {
+    const wi = +t.dataset.week, v = parseNum(t.value);
+    const m = (state.measure[wi] ||= {});
+    if (v !== null && v > 0 && v < 1000) { m[t.dataset.m] = Math.round(v * 10) / 10; t.value = num(m[t.dataset.m], 1); }
+    else { delete m[t.dataset.m]; t.value = ''; }
+    if (!Object.keys(m).length) delete state.measure[wi];
+    save();
+    const chart = $('#weightChart'); if (chart) chart.innerHTML = weightChart();
+    return;
+  }
+  if (t.dataset.t) {
+    const n = t.dataset.tw, v = String(t.value).trim().slice(0, 20);
+    const rec = (state.tests[n] ||= {});
+    if (v) rec[t.dataset.t] = v; else delete rec[t.dataset.t];
+    if (!Object.keys(rec).length) delete state.tests[n];
+    save();
+    return;
+  }
+  if (t.dataset.wlog) {
+    const v = parseNum(t.value);
+    setOwnWeight(t.dataset.wlog, v === null ? 0 : v);
+    refresh();
   }
 });
 
@@ -2690,6 +2982,18 @@ function navigate(route) {
   if (location.hash !== `#${route}`) location.hash = route;
   else { ui.route = route; renderView(true); }
 }
+// Beim Drehen des Handys / Ändern der Fensterbreite Diagramme passend neu zeichnen
+let narrowNow = window.innerWidth < 720, resizeT;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    const n = window.innerWidth < 720;
+    if (n === narrowNow) return;
+    narrowNow = n;
+    if (!ui.focus && !ui.modalDayId && !document.activeElement?.matches('input, select, textarea')) renderView(false);
+  }, 200);
+});
+
 window.addEventListener('hashchange', () => {
   const r = location.hash.slice(1);
   ui.route = ROUTES[r] ? r : 'dashboard';
@@ -2743,7 +3047,6 @@ function init() {
   $('#brandSub').textContent = PLAN_CONFIG.planName;
   $('#avatar').textContent = PLAN_CONFIG.athlete.split(/\s+/).map(s => s[0]).join('').slice(0, 2).toUpperCase();
   $('#sideActions').innerHTML = `
-    <button class="link-btn" data-action="load-demo" title="Demo-Daten laden">${icon('refresh', 'i-sm')}<span>Demo-Daten laden</span></button>
     <button class="link-btn" data-action="reset-all" title="Fortschritt zurücksetzen">${icon('trash', 'i-sm')}<span>Fortschritt zurücksetzen</span></button>`;
 
   if (PLAN_CONFIG.seedDemoProgress && !state.meta.seeded) seedDemoProgress();
